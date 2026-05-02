@@ -12,6 +12,8 @@ type DataTableProps<T> = {
   empty?: ReactNode;
   minWidth?: number;
   className?: string;
+  onRowClick?: (record: T) => void;
+  rowClassName?: (record: T, index: number) => string | undefined;
 };
 
 function getRowKey<T>(
@@ -38,6 +40,8 @@ export function DataTable<T>({
   empty,
   minWidth = 840,
   className,
+  onRowClick,
+  rowClassName,
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -105,7 +109,21 @@ export function DataTable<T>({
           {dataSource.map((record, rowIndex) => (
             <tr
               key={getRowKey(rowKey, record)}
-              className="transition-colors hover:bg-slate-50"
+              className={cn(
+                "transition-colors",
+                onRowClick && "cursor-pointer hover:bg-slate-50",
+                rowClassName?.(record, rowIndex),
+              )}
+              onClick={(event) => {
+                if (!onRowClick) return;
+
+                const target = event.target as HTMLElement | null;
+                if (target?.closest("button, a, input, textarea, select, label")) {
+                  return;
+                }
+
+                onRowClick(record);
+              }}
             >
               {columns.map((column, columnIndex) => {
                 const value = column.dataIndex

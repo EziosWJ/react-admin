@@ -48,7 +48,16 @@ export function assignUserRoles(id: number, data: UserAssignRolesRequest) {
 }
 
 export function resetUserPassword(id: number) {
-  return http.put<string>(`${USER_BASE_PATH}/${id}/reset-password`);
+  return http.put<unknown>(`${USER_BASE_PATH}/${id}/reset-password`).then((data) => {
+    if (typeof data === "string") return data;
+    if (data && typeof data === "object" && "password" in data) {
+      const password = (data as { password?: unknown }).password;
+      if (typeof password === "string") return password;
+      if (password !== null && password !== undefined) return String(password);
+    }
+
+    return "";
+  });
 }
 
 export function getAssignableRoles() {

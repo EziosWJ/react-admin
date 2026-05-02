@@ -28,6 +28,7 @@ import { toast } from "@/components/common/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { formatDateTime } from "@/lib/datetime";
 import { isApiError } from "@/lib/api-error";
 import type { DataTableColumn, OperLogDetail, OperLogRecord } from "@/types";
 
@@ -280,7 +281,9 @@ export function SystemOperLogsPage() {
         dataIndex: "operationTime",
         width: 180,
         render: (value) => (
-          <span className="tabular-nums">{String(value || "-")}</span>
+          <span className="whitespace-nowrap tabular-nums">
+            {formatDateTime(typeof value === "string" ? value : value ? String(value) : "")}
+          </span>
         ),
       },
       {
@@ -532,7 +535,14 @@ function OperLogDetailDialog({
               label="耗时"
               value={`${detail?.costTime ?? 0} ms`}
             />
-            <DetailItem label="操作时间" value={detail?.operationTime} />
+            <DetailItem
+              label="操作时间"
+              value={
+                <span className="whitespace-nowrap tabular-nums">
+                  {formatDateTime(detail?.operationTime)}
+                </span>
+              }
+            />
             <DetailItem
               label="异常信息"
               value={detail?.errorMessage}

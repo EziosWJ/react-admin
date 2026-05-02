@@ -39,6 +39,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateOnly, formatDateTime } from "@/lib/datetime";
 import { isApiError } from "@/lib/api-error";
 import type {
   ApiStatus,
@@ -445,13 +446,21 @@ export function UsersPage() {
       title: "最近登录",
       dataIndex: "lastLoginTime",
       width: 180,
-      render: (value) => String(value || "-"),
+      render: (value) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatDateTime(typeof value === "string" ? value : value ? String(value) : "")}
+        </span>
+      ),
     },
     {
       title: "创建时间",
       dataIndex: "createTime",
       width: 180,
-      render: (value) => String(value || "-"),
+      render: (value) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatDateOnly(typeof value === "string" ? value : value ? String(value) : "")}
+        </span>
+      ),
     },
     {
       title: "操作",
@@ -967,7 +976,7 @@ function PasswordResultDialog({
         </header>
         <div className="px-5 py-4">
           <div className="rounded-lg border border-border bg-slate-50 px-4 py-3 font-mono text-lg font-semibold tabular-nums text-text-primary">
-            {result.password}
+            {String(result.password)}
           </div>
         </div>
         <footer className="flex justify-end px-5 py-4">

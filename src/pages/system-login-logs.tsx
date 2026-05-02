@@ -32,6 +32,7 @@ import { toast } from "@/components/common/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { formatDateTime } from "@/lib/datetime";
 import { isApiError } from "@/lib/api-error";
 import type { DataTableColumn, LoginLogRecord } from "@/types";
 
@@ -227,7 +228,9 @@ export function SystemLoginLogsPage() {
         dataIndex: "loginTime",
         width: 180,
         render: (value) => (
-          <span className="tabular-nums">{String(value || "-")}</span>
+          <span className="whitespace-nowrap tabular-nums">
+            {formatDateTime(typeof value === "string" ? value : value ? String(value) : "")}
+          </span>
         ),
       },
       {
@@ -445,7 +448,14 @@ function LoginLogDetailDialog({
           <DetailItem label="登录 IP" value={detail?.loginIp} />
           <DetailItem label="浏览器" value={detail?.browser} />
           <DetailItem label="操作系统" value={detail?.os} />
-          <DetailItem label="登录时间" value={detail?.loginTime} />
+          <DetailItem
+            label="登录时间"
+            value={
+              <span className="whitespace-nowrap tabular-nums">
+                {formatDateTime(detail?.loginTime)}
+              </span>
+            }
+          />
           <DetailItem label="消息" value={detail?.message} className="md:col-span-2" />
         </div>
       </section>

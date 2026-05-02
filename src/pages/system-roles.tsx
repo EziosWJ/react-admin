@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateOnly } from "@/lib/datetime";
 import { isApiError } from "@/lib/api-error";
 import type {
   ApiStatus,
@@ -448,7 +449,11 @@ export function SystemRolesPage() {
       title: "创建时间",
       dataIndex: "createTime",
       width: 180,
-      render: (value) => String(value || "-"),
+      render: (value) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatDateOnly(typeof value === "string" ? value : value ? String(value) : "")}
+        </span>
+      ),
     },
     {
       title: "操作",

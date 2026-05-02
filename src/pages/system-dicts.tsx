@@ -38,7 +38,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateOnly } from "@/lib/datetime";
 import { isApiError } from "@/lib/api-error";
+import { cn } from "@/lib/utils";
 import type {
   ApiStatus,
   DataTableColumn,
@@ -210,7 +212,9 @@ export function SystemDictsPage() {
   const [dictItems, setDictItems] = useState<SystemDictDataRecord[]>([]);
   const [typeTotal, setTypeTotal] = useState(0);
   const [itemTotal, setItemTotal] = useState(0);
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  const [activeType, setActiveType] = useState<SystemDictTypeRecord | null>(
+    null,
+  );
   const [typeLoading, setTypeLoading] = useState(false);
   const [itemLoading, setItemLoading] = useState(false);
   const [typeError, setTypeError] = useState("");
@@ -239,7 +243,8 @@ export function SystemDictsPage() {
     defaultValues: toDataFormValues(),
   });
 
-  const selectedType = dictTypes.find((item) => item.id === selectedTypeId);
+  const selectedType = activeType;
+  const selectedTypeId = activeType?.id ?? null;
 
   const loadDictTypes = useCallback(async () => {
     setTypeLoading(true);
@@ -251,24 +256,20 @@ export function SystemDictsPage() {
       );
       setDictTypes(data.records);
       setTypeTotal(data.total);
+      setActiveType((current) => {
+        if (!current) return current;
 
-      if (data.records.length === 0) {
-        setSelectedTypeId(null);
-      } else if (
-        selectedTypeId === null ||
-        !data.records.some((item) => item.id === selectedTypeId)
-      ) {
-        setSelectedTypeId(data.records[0].id);
-      }
+        const next = data.records.find((item) => item.id === current.id);
+        return next ?? current;
+      });
     } catch (loadError) {
       setDictTypes([]);
       setTypeTotal(0);
-      setSelectedTypeId(null);
       setTypeError(getErrorMessage(loadError, "字典类型加载失败"));
     } finally {
       setTypeLoading(false);
     }
-  }, [appliedTypeFilters, selectedTypeId, typePage, typePageSize]);
+  }, [appliedTypeFilters, typePage, typePageSize]);
 
   const loadDictItems = useCallback(async () => {
     if (!selectedTypeId) {
@@ -328,10 +329,20 @@ export function SystemDictsPage() {
   };
 
   const selectType = (dictType: SystemDictTypeRecord) => {
-    setSelectedTypeId(dictType.id);
+    setActiveType(dictType);
     setItemPage(1);
     setItemFilters(DEFAULT_ITEM_FILTERS);
     setAppliedItemFilters(DEFAULT_ITEM_FILTERS);
+  };
+
+  const closeTypePanel = () => {
+    setActiveType(null);
+    setDictItems([]);
+    setItemTotal(0);
+    setItemError("");
+    setItemFilters(DEFAULT_ITEM_FILTERS);
+    setAppliedItemFilters(DEFAULT_ITEM_FILTERS);
+    setItemPage(1);
   };
 
   const openCreateTypeForm = () => {
@@ -455,6 +466,9 @@ export function SystemDictsPage() {
 
         await deleteDictType(confirmAction.dictType.id);
         toast.success("字典类型已删除");
+        if (selectedTypeId === confirmAction.dictType.id) {
+          closeTypePanel();
+        }
         await loadDictTypes();
       }
 
@@ -561,7 +575,11 @@ export function SystemDictsPage() {
       title: "创建时间",
       dataIndex: "createTime",
       width: 180,
-      render: (value) => String(value || "-"),
+      render: (value) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatDateOnly(typeof value === "string" ? value : value ? String(value) : "")}
+        </span>
+      ),
     },
     {
       title: "操作",
@@ -736,7 +754,14 @@ export function SystemDictsPage() {
         </form>
       </SearchFilterBar>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
+      <div
+        className={cn(
+          "grid gap-6",
+          selectedType
+            ? "xl:grid-cols-[minmax(0,0.88fr)_minmax(420px,1.12fr)]"
+            : "grid-cols-1",
+        )}
+      >
         <section className="rounded-admin border border-border bg-surface shadow-admin">
           <TableToolbar
             title="字典类型"
@@ -760,6 +785,10 @@ export function SystemDictsPage() {
             loading={typeLoading}
             error={typeError}
             minWidth={1000}
+            onRowClick={selectType}
+            rowClassName={(record) =>
+              selectedType?.id === record.id ? "bg-blue-50/60" : undefined
+            }
             empty={
               <EmptyState
                 title="暂无字典类型"
@@ -782,99 +811,101 @@ export function SystemDictsPage() {
           />
         </section>
 
-        <section className="rounded-admin border border-border bg-surface shadow-admin">
-          <TableToolbar
-            title="字典项"
-            description={
-              selectedType
-                ? `当前类型：${selectedType.dictName} / ${selectedType.dictCode}`
-                : "请选择字典类型"
-            }
-            actions={
-              <div className="flex items-center gap-2">
-                <StatusTag tone={itemLoading ? "warning" : itemError ? "error" : "info"}>
-                  {itemLoading ? "加载中" : itemError ? "加载失败" : "已同步"}
-                </StatusTag>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={!selectedType}
-                  onClick={openCreateDataForm}
-                >
-                  <Plus className="h-4 w-4" aria-hidden />
-                  新增项
-                </Button>
-              </div>
-            }
-          />
-          <div className="border-b border-border p-4">
-            <form className="flex flex-wrap gap-3" onSubmit={submitItemFilters}>
-              <div className="relative min-w-[180px] flex-1">
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary"
-                  aria-hidden
-                />
+        {selectedType && (
+          <section className="rounded-admin border border-border bg-surface shadow-admin">
+            <TableToolbar
+              title="字典项"
+              description={`当前类型：${selectedType.dictName} / ${selectedType.dictCode}`}
+              actions={
+                <div className="flex items-center gap-2">
+                  <StatusTag tone={itemLoading ? "warning" : itemError ? "error" : "info"}>
+                    {itemLoading ? "加载中" : itemError ? "加载失败" : "已同步"}
+                  </StatusTag>
+                  <Button size="sm" variant="secondary" onClick={closeTypePanel}>
+                    <X className="h-4 w-4" aria-hidden />
+                    收起
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={!selectedType}
+                    onClick={openCreateDataForm}
+                  >
+                    <Plus className="h-4 w-4" aria-hidden />
+                    新增项
+                  </Button>
+                </div>
+              }
+            />
+            <div className="border-b border-border p-4">
+              <form className="flex flex-wrap gap-3" onSubmit={submitItemFilters}>
+                <div className="relative min-w-[180px] flex-1">
+                  <Search
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary"
+                    aria-hidden
+                  />
+                  <Input
+                    value={itemFilters.dictLabel}
+                    onChange={(event) =>
+                      setItemFilters((current) => ({
+                        ...current,
+                        dictLabel: event.target.value,
+                      }))
+                    }
+                    placeholder="字典项名称"
+                    className="pl-9"
+                    disabled={!selectedType}
+                  />
+                </div>
                 <Input
-                  value={itemFilters.dictLabel}
+                  value={itemFilters.dictValue}
                   onChange={(event) =>
                     setItemFilters((current) => ({
                       ...current,
-                      dictLabel: event.target.value,
+                      dictValue: event.target.value,
                     }))
                   }
-                  placeholder="字典项名称"
-                  className="pl-9"
+                  placeholder="字典项值"
+                  className="min-w-[160px] flex-1"
                   disabled={!selectedType}
                 />
-              </div>
-              <Input
-                value={itemFilters.dictValue}
-                onChange={(event) =>
-                  setItemFilters((current) => ({
-                    ...current,
-                    dictValue: event.target.value,
-                  }))
-                }
-                placeholder="字典项值"
-                className="min-w-[160px] flex-1"
-                disabled={!selectedType}
-              />
-              <Button variant="secondary" onClick={resetItemFilters}>
-                重置
-              </Button>
-              <Button variant="primary" type="submit" disabled={!selectedType}>
-                查询
-              </Button>
-            </form>
-          </div>
-          <DataTable<SystemDictDataRecord>
-            columns={itemColumns}
-            dataSource={dictItems}
-            rowKey="id"
-            loading={itemLoading}
-            error={itemError}
-            minWidth={830}
-            empty={
-              <EmptyState
-                title="暂无字典项"
-                description="当前字典类型下没有匹配的字典项。"
-                actionText="重置筛选"
-                onAction={resetItemFilters}
-              />
-            }
-          />
-          <Pagination
-            page={itemPage}
-            pageSize={itemPageSize}
-            total={itemTotal}
-            disabled={itemLoading || !selectedType}
-            onPageChange={setItemPage}
-            onPageSizeChange={(nextPageSize) => {
-              setItemPageSize(nextPageSize);
-              setItemPage(1);
-            }}
-          />
-        </section>
+                <Button variant="secondary" onClick={resetItemFilters}>
+                  重置
+                </Button>
+                <Button variant="primary" type="submit" disabled={!selectedType}>
+                  查询
+                </Button>
+              </form>
+            </div>
+            <DataTable<SystemDictDataRecord>
+              columns={itemColumns}
+              dataSource={dictItems}
+              rowKey="id"
+              loading={itemLoading}
+              error={itemError}
+              minWidth={830}
+              empty={
+                <EmptyState
+                  title="暂无字典项"
+                  description="当前字典类型下没有匹配的字典项。"
+                  actionText="重置筛选"
+                  onAction={resetItemFilters}
+                />
+              }
+            />
+            <Pagination
+              page={itemPage}
+              pageSize={itemPageSize}
+              total={itemTotal}
+              disabled={itemLoading || !selectedType}
+              onPageChange={setItemPage}
+              onPageSizeChange={(nextPageSize) => {
+                setItemPageSize(nextPageSize);
+                setItemPage(1);
+              }}
+            />
+          </section>
+        )}
       </div>
 
       <DictTypeFormDialog
