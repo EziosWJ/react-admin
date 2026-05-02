@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 type CheckboxProps = InputHTMLAttributes<HTMLInputElement>;
 
-export function Checkbox({ className, type, ...props }: CheckboxProps) {
+export function Checkbox({ className, ...props }: CheckboxProps) {
   return (
     <input
       type="checkbox"
@@ -15,4 +15,3 @@ export function Checkbox({ className, type, ...props }: CheckboxProps) {
     />
   );
 }
-

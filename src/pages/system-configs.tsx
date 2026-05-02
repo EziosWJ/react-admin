@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { Plus, RotateCcw, Search } from "lucide-react";
-import { getSystemConfigTotal, getSystemConfigs } from "@/api/system";
+import { AlertCircle, Plus, RotateCcw, Search } from "lucide-react";
+import {
+  getSystemConfigTotal,
+  getSystemConfigs,
+  systemConfigIntegrationStatus,
+} from "@/api/system";
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHeader } from "@/components/common/page-header";
@@ -28,6 +32,8 @@ const typeLabelMap: Record<ConfigType, string> = {
   boolean: "布尔值",
   json: "JSON",
 };
+
+const isMockOnly = systemConfigIntegrationStatus === "mock-only";
 
 export function SystemConfigsPage() {
   const [keyword, setKeyword] = useState("");
@@ -107,10 +113,10 @@ export function SystemConfigsPage() {
       width: 180,
       render: () => (
         <div className="inline-flex items-center gap-2">
-          <Button size="sm" variant="ghost">
+          <Button size="sm" variant="ghost" disabled={isMockOnly}>
             编辑
           </Button>
-          <Button size="sm" variant="ghost">
+          <Button size="sm" variant="ghost" disabled={isMockOnly}>
             删除
           </Button>
         </div>
@@ -122,9 +128,9 @@ export function SystemConfigsPage() {
     <>
       <PageHeader
         title="配置管理"
-        description="维护系统配置项，当前使用前端 mock 数据。"
+        description="后端配置接口待补充，当前保留本地数据用于页面结构展示。"
         actions={
-          <Button variant="primary">
+          <Button variant="primary" disabled={isMockOnly}>
             <Plus className="h-4 w-4" aria-hidden />
             新增配置
           </Button>
@@ -175,13 +181,26 @@ export function SystemConfigsPage() {
         </Select>
       </SearchFilterBar>
 
+      <div className="flex items-start gap-3 rounded-admin border border-border bg-surface px-5 py-4 text-sm text-text-secondary shadow-admin">
+        <AlertCircle
+          className="mt-0.5 h-4 w-4 shrink-0 text-info"
+          aria-hidden
+        />
+        <div>
+          <div className="font-medium text-text-primary">后端接口待补充</div>
+          <div className="mt-1">
+            当前后端文档未列出系统配置接口，本页暂不接真实请求，新增、编辑、删除等写操作已停用。
+          </div>
+        </div>
+      </div>
+
       <section className="rounded-admin border border-border bg-surface shadow-admin">
         <TableToolbar
           title="配置项列表"
-          description={`共 ${total} 条 mock 数据，当前显示 ${configs.length} 条。`}
+          description={`共 ${total} 条本地数据，当前显示 ${configs.length} 条。`}
           actions={
-            <StatusTag tone={loading ? "warning" : "info"}>
-              {loading ? "加载中" : "加载完成"}
+            <StatusTag tone={loading ? "warning" : "neutral"}>
+              {loading ? "加载中" : "本地数据"}
             </StatusTag>
           }
         />

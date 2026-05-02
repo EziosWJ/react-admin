@@ -1,13 +1,23 @@
-import { mockLogin } from "@/mocks/auth";
-import type { AuthUser, LoginRequest } from "@/types";
+import { http } from "@/lib/http";
+import type {
+  CurrentUser,
+  CurrentUserMenu,
+  LoginRequest,
+  LoginResponse,
+} from "@/types";
 
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+export function loginByPassword(request: LoginRequest): Promise<LoginResponse> {
+  return http.post<LoginResponse>("/api/auth/login", request);
 }
 
-export async function loginByPassword(
-  request: LoginRequest,
-): Promise<AuthUser | null> {
-  await wait(300);
-  return mockLogin(request);
+export function getCurrentUser(): Promise<CurrentUser> {
+  return http.get<CurrentUser>("/api/auth/me");
+}
+
+export function logoutCurrentUser(): Promise<void> {
+  return http.post<void>("/api/auth/logout");
+}
+
+export function getCurrentUserMenus(): Promise<CurrentUserMenu[]> {
+  return http.get<CurrentUserMenu[]>("/api/auth/menus");
 }

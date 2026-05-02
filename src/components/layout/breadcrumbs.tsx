@@ -2,9 +2,19 @@ import { ChevronRight, Home } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { routeTitleMap } from "@/config/navigation";
 
+function getRouteTitle(pathname: string) {
+  return (
+    routeTitleMap[pathname] ??
+    Object.entries(routeTitleMap)
+      .sort((a, b) => b[0].length - a[0].length)
+      .find(([path]) => pathname.startsWith(`${path}/`))?.[1] ??
+    "页面"
+  );
+}
+
 export function Breadcrumbs() {
   const location = useLocation();
-  const title = routeTitleMap[location.pathname] ?? "页面";
+  const title = getRouteTitle(location.pathname);
 
   return (
     <nav aria-label="面包屑" className="flex items-center text-sm">
@@ -20,4 +30,3 @@ export function Breadcrumbs() {
     </nav>
   );
 }
-

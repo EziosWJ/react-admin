@@ -8,6 +8,7 @@ type DataTableProps<T> = {
   dataSource: T[];
   rowKey: keyof T | ((record: T) => string | number);
   loading?: boolean;
+  error?: ReactNode;
   empty?: ReactNode;
   minWidth?: number;
   className?: string;
@@ -33,6 +34,7 @@ export function DataTable<T>({
   dataSource,
   rowKey,
   loading = false,
+  error,
   empty,
   minWidth = 840,
   className,
@@ -46,6 +48,18 @@ export function DataTable<T>({
             className="h-11 animate-pulse rounded-lg bg-slate-100"
           />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-5">
+        {typeof error === "string" ? (
+          <EmptyState title="加载失败" description={error} />
+        ) : (
+          error
+        )}
       </div>
     );
   }

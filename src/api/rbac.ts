@@ -1,48 +1,102 @@
 import {
-  filterMockMenus,
   filterMockPermissions,
-  filterMockRoles,
-  getMockRolePermissionDetail,
-  getMockMenuTotal,
   getMockPermissionTotal,
-  mockMenus,
-  mockRoles,
 } from "@/mocks/rbac";
+import { http } from "@/lib/http";
+import type { ApiPageResult } from "@/types/api";
 import type {
-  MenuQuery,
-  MenuRecord,
   PermissionQuery,
   PermissionRecord,
-  RolePermissionDetail,
-  RoleQuery,
-  RoleRecord,
+  RoleAssignMenusRequest,
+  RoleBatchDeleteRequest,
+  RoleCreateRequest,
+  RoleDetailRecord,
+  RoleListQuery,
+  RoleListRecord,
+  RoleStatusRequest,
+  RoleUpdateRequest,
+  SystemMenuBatchDeleteRequest,
+  SystemMenuCreateRequest,
+  SystemMenuListQuery,
+  SystemMenuRecord,
+  SystemMenuStatusRequest,
+  SystemMenuTreeRecord,
+  SystemMenuUpdateRequest,
 } from "@/types";
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-export async function getRoles(query: RoleQuery = {}): Promise<RoleRecord[]> {
-  await wait(300);
-  return filterMockRoles(query);
+const ROLE_BASE_PATH = "/api/system/role";
+const MENU_BASE_PATH = "/api/system/menu";
+
+export function getRolePage(query: RoleListQuery) {
+  return http.get<ApiPageResult<RoleListRecord>>(`${ROLE_BASE_PATH}/page`, {
+    query,
+  });
 }
 
-export function getRoleTotal() {
-  return mockRoles.length;
+export function getRoleDetail(id: number) {
+  return http.get<RoleDetailRecord>(`${ROLE_BASE_PATH}/${id}`);
 }
 
-export async function getMenus(query: MenuQuery = {}): Promise<MenuRecord[]> {
-  await wait(300);
-  return filterMockMenus(query);
+export function createRole(data: RoleCreateRequest) {
+  return http.post<RoleListRecord>(ROLE_BASE_PATH, data);
 }
 
-export function getMenuTotal() {
-  return getMockMenuTotal();
+export function updateRole(id: number, data: RoleUpdateRequest) {
+  return http.put<RoleListRecord>(`${ROLE_BASE_PATH}/${id}`, data);
 }
 
-export async function getMenuTree(): Promise<typeof mockMenus> {
-  await wait(300);
-  return mockMenus;
+export function deleteRole(id: number) {
+  return http.delete<void>(`${ROLE_BASE_PATH}/${id}`);
+}
+
+export function batchDeleteRoles(data: RoleBatchDeleteRequest) {
+  return http.delete<void>(`${ROLE_BASE_PATH}/batch`, data);
+}
+
+export function updateRoleStatus(id: number, data: RoleStatusRequest) {
+  return http.patch<void>(`${ROLE_BASE_PATH}/${id}/status`, data);
+}
+
+export function assignRoleMenus(id: number, data: RoleAssignMenusRequest) {
+  return http.put<void>(`${ROLE_BASE_PATH}/${id}/menus`, data);
+}
+
+export function getSystemMenuTree() {
+  return http.get<SystemMenuTreeRecord[]>(`${MENU_BASE_PATH}/tree`);
+}
+
+export function getMenuPage(query: SystemMenuListQuery) {
+  return http.get<ApiPageResult<SystemMenuRecord>>(`${MENU_BASE_PATH}/page`, {
+    query,
+  });
+}
+
+export function getMenuDetail(id: number) {
+  return http.get<SystemMenuRecord>(`${MENU_BASE_PATH}/${id}`);
+}
+
+export function createMenu(data: SystemMenuCreateRequest) {
+  return http.post<SystemMenuRecord>(MENU_BASE_PATH, data);
+}
+
+export function updateMenu(id: number, data: SystemMenuUpdateRequest) {
+  return http.put<SystemMenuRecord>(`${MENU_BASE_PATH}/${id}`, data);
+}
+
+export function deleteMenu(id: number) {
+  return http.delete<void>(`${MENU_BASE_PATH}/${id}`);
+}
+
+export function batchDeleteMenus(data: SystemMenuBatchDeleteRequest) {
+  return http.delete<void>(`${MENU_BASE_PATH}/batch`, data);
+}
+
+export function updateMenuStatus(id: number, data: SystemMenuStatusRequest) {
+  return http.patch<void>(`${MENU_BASE_PATH}/${id}/status`, data);
 }
 
 export async function getPermissions(
@@ -54,11 +108,4 @@ export async function getPermissions(
 
 export function getPermissionTotal() {
   return getMockPermissionTotal();
-}
-
-export async function getRolePermissionDetail(
-  roleId: number,
-): Promise<RolePermissionDetail | null> {
-  await wait(300);
-  return getMockRolePermissionDetail(roleId);
 }

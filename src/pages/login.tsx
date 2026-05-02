@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { LockKeyhole, UserRound } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/field";
+import { isApiError } from "@/lib/api-error";
 import { useAuthStore } from "@/store/auth-store";
 import type { LoginErrors } from "@/types";
 
@@ -13,15 +13,16 @@ export function LoginPage() {
   const location = useLocation();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
-  const [remember, setRemember] = useState(true);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const from =
+  const stateFrom =
     (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname ?? "/dashboard";
+      ?.pathname;
+  const queryRedirect = new URLSearchParams(location.search).get("redirect");
+  const from = stateFrom ?? queryRedirect ?? "/dashboard";
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -43,16 +44,19 @@ export function LoginPage() {
       return;
     }
 
-    setSubmitting(true);
-    const ok = await login(username.trim(), password, remember);
-    setSubmitting(false);
-
-    if (!ok) {
-      setErrors({ account: "用户名或密码不正确" });
-      return;
+    try {
+      setSubmitting(true);
+      await login(username.trim(), password);
+      navigate(from, { replace: true });
+    } catch (error) {
+      setErrors({
+        account: isApiError(error)
+          ? error.message
+          : "登录失败，请稍后重试",
+      });
+    } finally {
+      setSubmitting(false);
     }
-
-    navigate(from, { replace: true });
   };
 
   return (
@@ -113,17 +117,8 @@ export function LoginPage() {
             />
           </Field>
 
-          <div className="flex items-center justify-between">
-            <label className="inline-flex items-center gap-2 text-sm text-text-secondary">
-              <Checkbox
-                checked={remember}
-                onChange={(event) => setRemember(event.target.checked)}
-              />
-              记住我
-            </label>
-            <span className="text-xs text-text-tertiary">
-              admin / admin123
-            </span>
+          <div className="flex items-center justify-end">
+            <span className="text-xs text-text-tertiary">后端账号登录</span>
           </div>
 
           {errors.account && (

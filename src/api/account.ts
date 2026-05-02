@@ -1,12 +1,18 @@
-import { mockGetAccountProfile } from "@/mocks/account";
-import type { AccountProfile } from "@/types";
+import { http } from "@/lib/http";
+import type {
+  ChangePasswordRequest,
+  UpdateAvatarRequest,
+} from "@/types/account";
+import type { CurrentUser } from "@/types/auth";
 
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+export async function getAccountProfile(): Promise<CurrentUser> {
+  return http.get<CurrentUser>("/api/auth/me");
 }
 
-export async function getAccountProfile(): Promise<AccountProfile> {
-  await wait(300);
-  return mockGetAccountProfile();
+export function changeCurrentUserPassword(data: ChangePasswordRequest) {
+  return http.put<void>("/api/system/user/me/password", data);
 }
 
+export function updateCurrentUserAvatar(data: UpdateAvatarRequest) {
+  return http.put<void>("/api/system/user/me/avatar", data);
+}

@@ -7,6 +7,10 @@ type AppSidebarProps = {
   collapsed: boolean;
 };
 
+function isPathActive(pathname: string, path: string) {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 export function AppSidebar({ collapsed }: AppSidebarProps) {
   const location = useLocation();
 
@@ -36,13 +40,21 @@ export function AppSidebar({ collapsed }: AppSidebarProps) {
           const Icon = item.icon;
           const hasChildren = Boolean(item.children?.length);
           const active =
-            location.pathname === item.path ||
-            location.pathname.startsWith(`${item.path}/`) ||
+            isPathActive(location.pathname, item.path) ||
+            Boolean(
+              item.activePaths?.some((path) =>
+                isPathActive(location.pathname, path),
+              ),
+            ) ||
             Boolean(
               item.children?.some(
                 (child) =>
-                  location.pathname === child.path ||
-                  location.pathname.startsWith(`${child.path}/`),
+                  isPathActive(location.pathname, child.path) ||
+                  Boolean(
+                    child.activePaths?.some((path) =>
+                      isPathActive(location.pathname, path),
+                    ),
+                  ),
               ),
             );
 
@@ -68,8 +80,12 @@ export function AppSidebar({ collapsed }: AppSidebarProps) {
                   {item.children?.map((child) => {
                     const ChildIcon = child.icon;
                     const childActive =
-                      location.pathname === child.path ||
-                      location.pathname.startsWith(`${child.path}/`);
+                      isPathActive(location.pathname, child.path) ||
+                      Boolean(
+                        child.activePaths?.some((path) =>
+                          isPathActive(location.pathname, path),
+                        ),
+                      );
 
                     return (
                       <Link

@@ -1,17 +1,62 @@
-import { filterMockUsers, mockUsers } from "@/mocks/users";
-import type { UserListQuery, UserRecord } from "@/types";
+import { http } from "@/lib/http";
+import type { ApiPageResult } from "@/types/api";
+import type {
+  AssignableRole,
+  UserAssignRolesRequest,
+  UserBatchDeleteRequest,
+  UserCreateRequest,
+  UserListQuery,
+  UserRecord,
+  UserStatusRequest,
+  UserUpdateRequest,
+} from "@/types/user";
 
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+const USER_BASE_PATH = "/api/system/user";
+
+export function getUserPage(query: UserListQuery) {
+  return http.get<ApiPageResult<UserRecord>>(`${USER_BASE_PATH}/page`, {
+    query,
+  });
 }
 
-export async function getUserList(
-  query: UserListQuery = {},
-): Promise<UserRecord[]> {
-  await wait(300);
-  return filterMockUsers(query);
+export function getUserDetail(id: number) {
+  return http.get<UserRecord>(`${USER_BASE_PATH}/${id}`);
 }
 
-export function getUserTotal() {
-  return mockUsers.length;
+export function createUser(data: UserCreateRequest) {
+  return http.post<UserRecord>(USER_BASE_PATH, data);
+}
+
+export function updateUser(id: number, data: UserUpdateRequest) {
+  return http.put<UserRecord>(`${USER_BASE_PATH}/${id}`, data);
+}
+
+export function deleteUser(id: number) {
+  return http.delete<void>(`${USER_BASE_PATH}/${id}`);
+}
+
+export function batchDeleteUsers(data: UserBatchDeleteRequest) {
+  return http.delete<void>(`${USER_BASE_PATH}/batch`, data);
+}
+
+export function updateUserStatus(id: number, data: UserStatusRequest) {
+  return http.patch<void>(`${USER_BASE_PATH}/${id}/status`, data);
+}
+
+export function assignUserRoles(id: number, data: UserAssignRolesRequest) {
+  return http.put<void>(`${USER_BASE_PATH}/${id}/roles`, data);
+}
+
+export function resetUserPassword(id: number) {
+  return http.put<string>(`${USER_BASE_PATH}/${id}/reset-password`);
+}
+
+export function getAssignableRoles() {
+  return http.get<ApiPageResult<AssignableRole>>("/api/system/role/page", {
+    query: {
+      page: 1,
+      pageSize: 100,
+      status: 1,
+    },
+  });
 }
