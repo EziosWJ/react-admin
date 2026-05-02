@@ -6,45 +6,26 @@ import {
   X,
 } from "lucide-react";
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { ToastContext } from "@/components/common/use-toast";
 import { Button } from "@/components/ui/button";
+import {
+  dismissToast,
+  getToastSnapshot,
+  showToast,
+  subscribeToast,
+  type ToastApi,
+  type ToastItem,
+  type ToastOptions,
+  type ToastType,
+} from "@/components/common/toast-store";
 import { cn } from "@/lib/utils";
-
-type ToastType = "success" | "error" | "warning" | "info";
-
-type ToastOptions = {
-  title?: string;
-  description?: string;
-  duration?: number;
-};
-
-type ToastItem = Required<Pick<ToastOptions, "duration">> &
-  Omit<ToastOptions, "duration"> & {
-    id: string;
-    type: ToastType;
-  };
-
-type ToastApi = {
-  show: (type: ToastType, options: string | ToastOptions) => string;
-  success: (options: string | ToastOptions) => string;
-  error: (options: string | ToastOptions) => string;
-  warning: (options: string | ToastOptions) => string;
-  info: (options: string | ToastOptions) => string;
-  dismiss: (id: string) => void;
-};
-
-const DEFAULT_DURATION = 3200;
-const ToastContext = createContext<ToastApi | null>(null);
-let toastItems: ToastItem[] = [];
-const toastListeners = new Set<() => void>();
 
 const icons: Record<ToastType, ReactNode> = {
   success: <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />,
@@ -52,55 +33,6 @@ const icons: Record<ToastType, ReactNode> = {
   warning: <TriangleAlert className="h-4 w-4 text-warning" aria-hidden />,
   info: <Info className="h-4 w-4 text-info" aria-hidden />,
 };
-
-function normalizeToastOptions(options: string | ToastOptions): ToastOptions {
-  if (typeof options === "string") {
-    return { title: options };
-  }
-
-  return options;
-}
-
-function createToastId() {
-  return `toast-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function emitToastChange() {
-  toastListeners.forEach((listener) => listener());
-}
-
-function subscribeToast(listener: () => void) {
-  toastListeners.add(listener);
-  return () => toastListeners.delete(listener);
-}
-
-function getToastSnapshot() {
-  return toastItems;
-}
-
-function dismissToast(id: string) {
-  toastItems = toastItems.filter((item) => item.id !== id);
-  emitToastChange();
-}
-
-function showToast(type: ToastType, options: string | ToastOptions) {
-  const normalized = normalizeToastOptions(options);
-  const id = createToastId();
-
-  toastItems = [
-    ...toastItems,
-    {
-      id,
-      type,
-      title: normalized.title,
-      description: normalized.description,
-      duration: normalized.duration ?? DEFAULT_DURATION,
-    },
-  ];
-  emitToastChange();
-
-  return id;
-}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const dismiss = useCallback((id: string) => dismissToast(id), []);
@@ -139,34 +71,6 @@ export function Toaster() {
 
   return <ToastViewport items={items} onDismiss={dismissToast} />;
 }
-
-export function useToast() {
-  const api = useContext(ToastContext);
-
-  if (!api) {
-    throw new Error("useToast must be used inside ToastProvider.");
-  }
-
-  return api;
-}
-
-export const toast = {
-  success(options: string | ToastOptions) {
-    return showToast("success", options);
-  },
-  error(options: string | ToastOptions) {
-    return showToast("error", options);
-  },
-  warning(options: string | ToastOptions) {
-    return showToast("warning", options);
-  },
-  info(options: string | ToastOptions) {
-    return showToast("info", options);
-  },
-  dismiss(id: string) {
-    dismissToast(id);
-  },
-};
 
 function ToastViewport({
   items,

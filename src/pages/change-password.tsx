@@ -8,7 +8,7 @@ import { Field } from "@/components/common/field";
 import { FormSection } from "@/components/common/form-section";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusTag } from "@/components/common/status-tag";
-import { toast } from "@/components/common/toast";
+import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isApiError } from "@/lib/api-error";

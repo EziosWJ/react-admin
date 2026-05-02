@@ -1,12 +1,6 @@
-import {
-  filterMockSystemConfigs,
-  mockSystemConfigs,
-} from "@/mocks/system";
 import { http } from "@/lib/http";
 import type { ApiPageResult } from "@/types/api";
-import type { SystemConfigIntegrationStatus } from "@/types/system";
 import type {
-  ConfigQuery,
   DictDataBatchDeleteRequest,
   DictDataCreateRequest,
   DictDataListQuery,
@@ -17,14 +11,16 @@ import type {
   DictTypeListQuery,
   DictTypeStatusRequest,
   DictTypeUpdateRequest,
+  SystemConfigBatchDeleteRequest,
+  SystemConfigCreateRequest,
+  SystemConfigListQuery,
   SystemDictDataRecord,
   SystemDictTypeRecord,
   SystemConfigRecord,
+  SystemConfigStatusRequest,
+  SystemConfigUpdateRequest,
+  SystemConfigValueRecord,
 } from "@/types";
-
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
 
 export async function getDictTypes(
   query: DictTypeListQuery,
@@ -34,10 +30,9 @@ export async function getDictTypes(
 
 const DICT_TYPE_BASE_PATH = "/api/system/dict-type";
 const DICT_DATA_BASE_PATH = "/api/system/dict-data";
+const SYSTEM_CONFIG_BASE_PATH = "/api/system/config";
 const dictItemCache = new Map<string, Promise<DictOption[]>>();
-
-export const systemConfigIntegrationStatus: SystemConfigIntegrationStatus =
-  "mock-only";
+const systemConfigValueCache = new Map<string, Promise<SystemConfigValueRecord>>();
 
 export function getDictTypePage(query: DictTypeListQuery) {
   return http.get<ApiPageResult<SystemDictTypeRecord>>(
@@ -133,14 +128,74 @@ export function clearDictItemCache(dictCode?: string) {
   dictItemCache.clear();
 }
 
-export async function getSystemConfigs(
-  query: ConfigQuery = {},
-): Promise<SystemConfigRecord[]> {
-  // 后端文档暂未提供系统配置接口，配置管理先保留本地 mock 数据。
-  await wait(300);
-  return filterMockSystemConfigs(query);
+export function getSystemConfigPage(query: SystemConfigListQuery) {
+  return http.get<ApiPageResult<SystemConfigRecord>>(
+    `${SYSTEM_CONFIG_BASE_PATH}/page`,
+    {
+      query,
+    },
+  );
 }
 
-export function getSystemConfigTotal() {
-  return mockSystemConfigs.length;
+export function getSystemConfigDetail(id: number) {
+  return http.get<SystemConfigRecord>(`${SYSTEM_CONFIG_BASE_PATH}/${id}`);
+}
+
+export function getSystemConfigByKey(configKey: string, forceRefresh = false) {
+  const normalizedKey = configKey.trim();
+
+  if (!normalizedKey) {
+    return Promise.resolve(null);
+  }
+
+  if (forceRefresh || !systemConfigValueCache.has(normalizedKey)) {
+    systemConfigValueCache.set(
+      normalizedKey,
+      http.get<SystemConfigValueRecord>(
+        `${SYSTEM_CONFIG_BASE_PATH}/key/${encodeURIComponent(normalizedKey)}`,
+      ),
+    );
+  }
+
+  return systemConfigValueCache.get(normalizedKey) as Promise<SystemConfigValueRecord>;
+}
+
+export function clearSystemConfigCache(configKey?: string) {
+  if (configKey) {
+    systemConfigValueCache.delete(configKey.trim());
+    return;
+  }
+
+  systemConfigValueCache.clear();
+}
+
+export function createSystemConfig(data: SystemConfigCreateRequest) {
+  clearSystemConfigCache(data.configKey);
+  return http.post<SystemConfigRecord>(SYSTEM_CONFIG_BASE_PATH, data);
+}
+
+export function updateSystemConfig(
+  id: number,
+  data: SystemConfigUpdateRequest,
+) {
+  clearSystemConfigCache(data.configKey);
+  return http.put<SystemConfigRecord>(`${SYSTEM_CONFIG_BASE_PATH}/${id}`, data);
+}
+
+export function deleteSystemConfig(id: number) {
+  clearSystemConfigCache();
+  return http.delete<void>(`${SYSTEM_CONFIG_BASE_PATH}/${id}`);
+}
+
+export function batchDeleteSystemConfigs(data: SystemConfigBatchDeleteRequest) {
+  clearSystemConfigCache();
+  return http.post<void>(`${SYSTEM_CONFIG_BASE_PATH}/batch-delete`, data);
+}
+
+export function updateSystemConfigStatus(
+  id: number,
+  data: SystemConfigStatusRequest,
+) {
+  clearSystemConfigCache();
+  return http.patch<void>(`${SYSTEM_CONFIG_BASE_PATH}/${id}/status`, data);
 }

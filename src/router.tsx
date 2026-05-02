@@ -4,19 +4,23 @@ import { AppShell } from "@/components/layout/app-shell";
 import { AccountProfilePage } from "@/pages/account-profile";
 import { ChangePasswordPage } from "@/pages/change-password";
 import { DashboardPage } from "@/pages/dashboard";
+import { DetailDemoPage } from "@/pages/examples/detail-demo";
 import { FormExamplePage } from "@/pages/form-example";
+import { ListDemoPage } from "@/pages/examples/list-demo";
+import { TreeDemoPage } from "@/pages/examples/tree-demo";
+import { TreeTableDemoPage } from "@/pages/examples/tree-table-demo";
 import { LoginPage } from "@/pages/login";
 import { NotFoundPage } from "@/pages/not-found";
 import { SettingsPage } from "@/pages/settings";
-import { SystemDeptsPage } from "@/pages/system-depts";
-import { SystemRolesPage } from "@/pages/system-roles";
-import { SystemMenusPage } from "@/pages/system-menus";
+import { SystemConfigsPage } from "@/pages/system/configs";
+import { SystemDeptsPage } from "@/pages/system/depts";
+import { SystemDictsPage } from "@/pages/system/dicts";
+import { SystemLoginLogsPage } from "@/pages/system/logs/login-logs";
+import { SystemOperLogsPage } from "@/pages/system/logs/oper-logs";
+import { SystemMenusPage } from "@/pages/system/menus";
 import { SystemPermissionsPage } from "@/pages/system-permissions";
-import { SystemConfigsPage } from "@/pages/system-configs";
-import { SystemDictsPage } from "@/pages/system-dicts";
-import { SystemLoginLogsPage } from "@/pages/system-login-logs";
-import { UsersPage } from "@/pages/users";
-import { SystemOperLogsPage } from "@/pages/system-oper-logs";
+import { SystemRolesPage } from "@/pages/system/roles";
+import { UsersPage } from "@/pages/system/users";
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +54,22 @@ export const router = createBrowserRouter([
       {
         path: "forms/basic",
         element: <FormExamplePage />,
+      },
+      {
+        path: "examples/list",
+        element: <ListDemoPage />,
+      },
+      {
+        path: "examples/tree",
+        element: <TreeDemoPage />,
+      },
+      {
+        path: "examples/tree-table",
+        element: <TreeTableDemoPage />,
+      },
+      {
+        path: "examples/detail",
+        element: <DetailDemoPage />,
       },
       {
         path: "settings",

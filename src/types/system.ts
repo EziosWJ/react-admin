@@ -104,9 +104,11 @@ export type DictOption = {
 
 export type ConfigType = "string" | "number" | "boolean" | "json";
 
-export type SystemConfigIntegrationStatus = "mock-only";
+export type SystemConfigType = "SYSTEM" | "CUSTOM";
 
-export type SystemConfigRecord = {
+export type SystemConfigValueType = "TEXT" | "NUMBER" | "BOOLEAN";
+
+export type SystemConfigLegacyRecord = {
   id: number;
   name: string;
   key: string;
@@ -120,4 +122,61 @@ export type ConfigQuery = {
   keyword?: string;
   type?: ConfigType | "all";
   status?: SystemStatus | "all";
+};
+
+export type SystemConfigRecord = {
+  id: number;
+  configName?: string;
+  configKey?: string;
+  configValue?: string | null;
+  configType?: SystemConfigType;
+  valueType?: SystemConfigValueType;
+  status: ApiStatus | SystemStatus;
+  isBuiltin?: ApiBuiltinFlag;
+  remark?: string | null;
+  createTime?: string | null;
+  updateTime?: string | null;
+
+  /**
+   * 兼容旧 mock 数据类型。系统配置页面和真实接口只使用上方后端字段。
+   */
+  name: string;
+  key: string;
+  value: string;
+  type: ConfigType;
+  updatedAt: string;
+};
+
+export type SystemConfigValueRecord = {
+  configKey: string;
+  configValue?: string | null;
+  valueType: SystemConfigValueType;
+  configName: string;
+};
+
+export type SystemConfigListQuery = Partial<ApiPageRequest> & {
+  configName?: string;
+  configKey?: string;
+  configType?: SystemConfigType;
+  status?: ApiStatus;
+};
+
+export type SystemConfigCreateRequest = {
+  configName: string;
+  configKey: string;
+  configValue?: string;
+  configType: SystemConfigType;
+  valueType: SystemConfigValueType;
+  status: ApiStatus;
+  remark?: string;
+};
+
+export type SystemConfigUpdateRequest = SystemConfigCreateRequest;
+
+export type SystemConfigStatusRequest = {
+  status: ApiStatus;
+};
+
+export type SystemConfigBatchDeleteRequest = {
+  ids: number[];
 };

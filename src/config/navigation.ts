@@ -1,13 +1,17 @@
 import {
   Building2,
+  FileSearch,
   FileText,
   History,
   LayoutDashboard,
   ListTree,
   GitBranch,
+  Network,
+  PanelLeft,
   Settings,
   SlidersHorizontal,
   ShieldHalf,
+  Table2,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -28,9 +32,36 @@ export const navItems: NavItem[] = [
   },
 
   {
-    label: "表单示例",
-    path: "/forms/basic",
+    label: "页面示例",
+    path: "/examples",
     icon: FileText,
+    children: [
+      {
+        label: "表单示例",
+        path: "/forms/basic",
+        icon: FileText,
+      },
+      {
+        label: "列表页 Demo",
+        path: "/examples/list",
+        icon: Table2,
+      },
+      {
+        label: "树形结构 Demo",
+        path: "/examples/tree",
+        icon: Network,
+      },
+      {
+        label: "左树右表 Demo",
+        path: "/examples/tree-table",
+        icon: PanelLeft,
+      },
+      {
+        label: "详情页 Demo",
+        path: "/examples/detail",
+        icon: FileSearch,
+      },
+    ],
   },
   {
     label: "系统管理",
@@ -96,6 +127,11 @@ export const routeTitleMap: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/users": "用户管理",
   "/forms/basic": "表单示例",
+  "/examples": "页面示例",
+  "/examples/list": "列表页 Demo",
+  "/examples/tree": "树形结构 Demo",
+  "/examples/tree-table": "左树右表 Demo",
+  "/examples/detail": "详情页 Demo",
   "/settings": "系统设置",
   "/system": "系统管理",
   "/system/user": "用户管理",

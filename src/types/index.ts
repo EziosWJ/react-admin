@@ -63,9 +63,17 @@ export type {
   DictTypeStatusRequest,
   DictTypeUpdateRequest,
   DictItemLegacyRecord,
+  SystemConfigBatchDeleteRequest,
+  SystemConfigCreateRequest,
+  SystemConfigListQuery,
   SystemDictDataRecord,
   SystemDictTypeRecord,
   SystemConfigRecord,
+  SystemConfigStatusRequest,
+  SystemConfigType,
+  SystemConfigUpdateRequest,
+  SystemConfigValueRecord,
+  SystemConfigValueType,
   SystemStatus,
 } from "./system";
 export type { DataTableColumn } from "./table";

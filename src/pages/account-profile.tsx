@@ -8,7 +8,7 @@ import { ContentCard } from "@/components/common/content-card";
 import { FileUpload } from "@/components/common/file-upload";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusTag } from "@/components/common/status-tag";
-import { toast } from "@/components/common/toast";
+import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { isApiError } from "@/lib/api-error";
 import { useAuthStore } from "@/store/auth-store";
