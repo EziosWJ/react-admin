@@ -23,11 +23,7 @@ export const navItems: NavItem[] = [
     path: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    label: "用户管理",
-    path: "/users",
-    icon: UsersRound,
-  },
+
   {
     label: "表单示例",
     path: "/forms/basic",
@@ -38,6 +34,7 @@ export const navItems: NavItem[] = [
     path: "/settings",
     icon: Settings,
     children: [
+
       {
         label: "字典管理",
         path: "/system/dicts",
@@ -47,6 +44,11 @@ export const navItems: NavItem[] = [
         label: "配置管理",
         path: "/system/configs",
         icon: SlidersHorizontal,
+      },
+      {
+        label: "用户管理",
+        path: "/users",
+        icon: UsersRound,
       },
       {
         label: "角色管理",
