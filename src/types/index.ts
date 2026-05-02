@@ -15,4 +15,19 @@ export type {
   SystemStatus,
 } from "./system";
 export type { DataTableColumn } from "./table";
+export type {
+  MenuQuery,
+  MenuRecord,
+  MenuStatus,
+  MenuType,
+  PermissionQuery,
+  PermissionRecord,
+  PermissionStatus,
+  PermissionType,
+  RolePermissionDetail,
+  RoleDataScope,
+  RoleQuery,
+  RoleRecord,
+  RoleStatus,
+} from "./rbac";
 export type { UserListQuery, UserRecord, UserStatus } from "./user";

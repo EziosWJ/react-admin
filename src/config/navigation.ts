@@ -2,8 +2,10 @@ import {
   FileText,
   LayoutDashboard,
   ListTree,
+  GitBranch,
   Settings,
   SlidersHorizontal,
+  ShieldHalf,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -46,6 +48,21 @@ export const navItems: NavItem[] = [
         path: "/system/configs",
         icon: SlidersHorizontal,
       },
+      {
+        label: "角色管理",
+        path: "/system/roles",
+        icon: ShieldHalf,
+      },
+      {
+        label: "菜单管理",
+        path: "/system/menus",
+        icon: GitBranch,
+      },
+      {
+        label: "权限点管理",
+        path: "/system/permissions",
+        icon: ShieldHalf,
+      },
     ],
   },
 ];
@@ -57,6 +74,9 @@ export const routeTitleMap: Record<string, string> = {
   "/settings": "系统设置",
   "/system/dicts": "字典管理",
   "/system/configs": "配置管理",
+  "/system/roles": "角色管理",
+  "/system/menus": "菜单管理",
+  "/system/permissions": "权限点管理",
   "/account/profile": "个人中心",
   "/account/change-password": "修改密码",
 };

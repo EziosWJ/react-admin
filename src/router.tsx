@@ -8,6 +8,9 @@ import { FormExamplePage } from "@/pages/form-example";
 import { LoginPage } from "@/pages/login";
 import { NotFoundPage } from "@/pages/not-found";
 import { SettingsPage } from "@/pages/settings";
+import { SystemRolesPage } from "@/pages/system-roles";
+import { SystemMenusPage } from "@/pages/system-menus";
+import { SystemPermissionsPage } from "@/pages/system-permissions";
 import { SystemConfigsPage } from "@/pages/system-configs";
 import { SystemDictsPage } from "@/pages/system-dicts";
 import { UsersPage } from "@/pages/users";
@@ -52,6 +55,18 @@ export const router = createBrowserRouter([
       {
         path: "system/configs",
         element: <SystemConfigsPage />,
+      },
+      {
+        path: "system/roles",
+        element: <SystemRolesPage />,
+      },
+      {
+        path: "system/menus",
+        element: <SystemMenusPage />,
+      },
+      {
+        path: "system/permissions",
+        element: <SystemPermissionsPage />,
       },
       {
         path: "account/profile",
