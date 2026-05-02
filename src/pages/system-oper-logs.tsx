@@ -110,10 +110,13 @@ function stringifySummary(value: unknown) {
   }
 }
 
-function getDetailSummary(detail: OperLogDetail | null, keys: string[]) {
+function getDetailSummary(
+  detail: OperLogDetail | null,
+  key: "requestParams" | "responseResult",
+) {
   if (!detail) return "-";
   const record = detail as Record<string, unknown>;
-  const value = keys.map((key) => record[key]).find((item) => item);
+  const value = record[key];
   return stringifySummary(value);
 }
 
@@ -473,15 +476,8 @@ function OperLogDetailDialog({
   if (!open || typeof document === "undefined") return null;
 
   const statusMeta = getStatusMeta(detail?.operationStatus ?? "");
-  const requestSummary = getDetailSummary(detail, [
-    "requestParams",
-    "requestParam",
-    "requestBody",
-  ]);
-  const responseSummary = getDetailSummary(detail, [
-    "responseResult",
-    "responseData",
-  ]);
+  const requestSummary = getDetailSummary(detail, "requestParams");
+  const responseSummary = getDetailSummary(detail, "responseResult");
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 py-6">

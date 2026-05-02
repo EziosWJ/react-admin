@@ -34,10 +34,7 @@ export type OperLogRecord = {
 
 export type OperLogDetail = OperLogRecord & {
   requestParams?: string;
-  requestParam?: string;
-  requestBody?: string;
   responseResult?: string;
-  responseData?: string;
   errorMessage?: string;
 };
 

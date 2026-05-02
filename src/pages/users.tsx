@@ -294,7 +294,7 @@ export function UsersPage() {
       ]);
       setRoleDialogUser(detail);
       setSelectedRoleIds(detail.roles?.map((role) => role.id) ?? []);
-      setRoleOptions(roles.records);
+      setRoleOptions(roles);
     } catch (roleError) {
       toast.error({
         title: "角色数据加载失败",

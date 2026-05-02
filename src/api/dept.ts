@@ -44,7 +44,7 @@ export function deleteDept(id: number) {
 }
 
 export function batchDeleteDepts(data: DeptBatchDeleteRequest) {
-  return http.delete<void>(`${DEPT_BASE_PATH}/batch`, data);
+  return http.post<void>(`${DEPT_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateDeptStatus(id: number, data: DeptStatusRequest) {

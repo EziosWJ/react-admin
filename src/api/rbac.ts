@@ -54,7 +54,7 @@ export function deleteRole(id: number) {
 }
 
 export function batchDeleteRoles(data: RoleBatchDeleteRequest) {
-  return http.delete<void>(`${ROLE_BASE_PATH}/batch`, data);
+  return http.post<void>(`${ROLE_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateRoleStatus(id: number, data: RoleStatusRequest) {
@@ -92,7 +92,7 @@ export function deleteMenu(id: number) {
 }
 
 export function batchDeleteMenus(data: SystemMenuBatchDeleteRequest) {
-  return http.delete<void>(`${MENU_BASE_PATH}/batch`, data);
+  return http.post<void>(`${MENU_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateMenuStatus(id: number, data: SystemMenuStatusRequest) {

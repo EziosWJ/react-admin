@@ -36,7 +36,7 @@ export function deleteUser(id: number) {
 }
 
 export function batchDeleteUsers(data: UserBatchDeleteRequest) {
-  return http.delete<void>(`${USER_BASE_PATH}/batch`, data);
+  return http.post<void>(`${USER_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateUserStatus(id: number, data: UserStatusRequest) {
@@ -52,11 +52,5 @@ export function resetUserPassword(id: number) {
 }
 
 export function getAssignableRoles() {
-  return http.get<ApiPageResult<AssignableRole>>("/api/system/role/page", {
-    query: {
-      page: 1,
-      pageSize: 100,
-      status: 1,
-    },
-  });
+  return http.get<AssignableRole[]>("/api/system/role/options");
 }

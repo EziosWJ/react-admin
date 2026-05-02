@@ -68,7 +68,7 @@ export function deleteFile(id: number) {
 }
 
 export function batchDeleteFiles(data: FileBatchDeleteRequest) {
-  return http.delete<void>(`${FILE_BASE_PATH}/batch`, data);
+  return http.post<void>(`${FILE_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateFileStatus(id: number, data: FileStatusRequest) {

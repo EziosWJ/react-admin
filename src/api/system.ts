@@ -65,7 +65,7 @@ export function deleteDictType(id: number) {
 }
 
 export function batchDeleteDictTypes(data: DictTypeBatchDeleteRequest) {
-  return http.delete<void>(`${DICT_TYPE_BASE_PATH}/batch`, data);
+  return http.post<void>(`${DICT_TYPE_BASE_PATH}/batch-delete`, data);
 }
 
 export function updateDictTypeStatus(id: number, data: DictTypeStatusRequest) {
@@ -102,7 +102,7 @@ export function deleteDictData(id: number) {
 
 export function batchDeleteDictData(data: DictDataBatchDeleteRequest) {
   clearDictItemCache();
-  return http.delete<void>(`${DICT_DATA_BASE_PATH}/batch`, data);
+  return http.post<void>(`${DICT_DATA_BASE_PATH}/batch-delete`, data);
 }
 
 export function getDictItems(dictCode: string, forceRefresh = false) {
