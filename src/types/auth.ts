@@ -20,4 +20,3 @@ export type LoginErrors = {
   password?: string;
   account?: string;
 };
-

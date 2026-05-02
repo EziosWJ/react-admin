@@ -11,4 +11,3 @@ export async function loginByPassword(
   await wait(300);
   return mockLogin(request);
 }
-

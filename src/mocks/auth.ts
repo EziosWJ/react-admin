@@ -15,4 +15,3 @@ export function mockLogin({ username, password }: LoginRequest): AuthUser | null
     username,
   };
 }
-
