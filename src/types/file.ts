@@ -19,6 +19,16 @@ export type FileUploadOptions = {
   remark?: string;
 };
 
+export type FileUploadFailedItem = {
+  fileName: string;
+  message: string;
+};
+
+export type FileUploadBatchResult = {
+  succeeded: FileRecord[];
+  failed: FileUploadFailedItem[];
+};
+
 export type FileListQuery = Partial<ApiPageRequest> & {
   originalName?: string;
   businessModule?: string;

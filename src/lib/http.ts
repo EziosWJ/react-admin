@@ -77,9 +77,13 @@ function joinUrl(baseUrl: string, path: string) {
   return `${normalizedBaseUrl}${normalizedPath}`;
 }
 
-function buildUrl(path: string, query?: ApiQueryParams) {
+export function buildApiUrl(path: string) {
   const baseUrl = (import.meta as ViteImportMeta).env?.VITE_API_BASE_URL ?? "";
-  const url = joinUrl(baseUrl, path);
+  return joinUrl(baseUrl, path);
+}
+
+function buildUrl(path: string, query?: ApiQueryParams) {
+  const url = buildApiUrl(path);
 
   if (!query) return url;
 

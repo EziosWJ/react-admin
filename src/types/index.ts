@@ -35,6 +35,8 @@ export type {
   FileRecord,
   FileStatusRequest,
   FileUpdateRequest,
+  FileUploadBatchResult,
+  FileUploadFailedItem,
   FileUploadOptions,
 } from "./file";
 export type {

@@ -1,4 +1,4 @@
-import { http } from "@/lib/http";
+import { buildApiUrl, http } from "@/lib/http";
 import type { ApiPageResult } from "@/types/api";
 import type {
   FileBatchDeleteRequest,
@@ -6,6 +6,7 @@ import type {
   FileRecord,
   FileStatusRequest,
   FileUpdateRequest,
+  FileUploadBatchResult,
   FileUploadOptions,
 } from "@/types/file";
 
@@ -43,7 +44,7 @@ export function uploadFile(file: File, options?: FileUploadOptions) {
 }
 
 export function uploadFiles(files: File[], options?: FileUploadOptions) {
-  return http.post<FileRecord[]>(
+  return http.post<FileUploadBatchResult>(
     `${FILE_BASE_PATH}/upload-batch`,
     createUploadFormData("files", files, options),
   );
@@ -80,5 +81,9 @@ export function downloadFile(id: number) {
 }
 
 export function getFileViewUrl(id: number) {
-  return `${FILE_BASE_PATH}/${id}/view`;
+  return buildApiUrl(`${FILE_BASE_PATH}/${id}/view`);
+}
+
+export function getFileAccessUrl(accessUrl: string) {
+  return buildApiUrl(accessUrl);
 }
