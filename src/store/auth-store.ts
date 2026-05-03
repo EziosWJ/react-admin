@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   getCurrentUser,
+  getCurrentUserMenus,
   loginByPassword,
   logoutCurrentUser,
 } from "@/api/auth";
@@ -63,20 +64,30 @@ const storedAuth = readStoredAuth();
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: storedAuth.token || null,
   user: storedAuth.user,
+  menus: [],
   isAuthenticated: Boolean(storedAuth.token),
   isLoadingUser: false,
+  isLoadingMenus: false,
 
   login: async (username, password) => {
     const loginResult = await loginByPassword({ username, password });
     const token = loginResult.tokenValue;
 
-    set({ token, user: null, isAuthenticated: true, isLoadingUser: true });
+    set({
+      token,
+      user: null,
+      menus: [],
+      isAuthenticated: true,
+      isLoadingUser: true,
+      isLoadingMenus: false,
+    });
     writeStoredAuth(token, null);
 
     try {
       const user = await getCurrentUser();
       writeStoredAuth(token, user);
       set({ user, isAuthenticated: true, isLoadingUser: false });
+      void get().fetchCurrentUserMenus(true).catch(() => undefined);
       return user;
     } catch (error) {
       get().clearAuth();
@@ -100,9 +111,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoadingUser: false,
       });
+      void get().fetchCurrentUserMenus();
       return nextUser;
     } catch (error) {
       get().clearAuth();
+      throw error;
+    }
+  },
+
+  fetchCurrentUserMenus: async (force = false) => {
+    const { token, menus, isLoadingMenus } = get();
+    if (!token) return [];
+    if (!force && menus.length > 0) return menus;
+    if (isLoadingMenus) return menus;
+
+    set({ isLoadingMenus: true });
+
+    try {
+      const nextMenus = await getCurrentUserMenus();
+      set({ menus: nextMenus, isLoadingMenus: false });
+      return nextMenus;
+    } catch (error) {
+      set({ isLoadingMenus: false });
       throw error;
     }
   },
@@ -124,8 +154,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       token: null,
       user: null,
+      menus: [],
       isAuthenticated: false,
       isLoadingUser: false,
+      isLoadingMenus: false,
     });
   },
 }));

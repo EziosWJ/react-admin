@@ -40,6 +40,7 @@ export type CurrentUserMenu = {
   menuType: "DIR" | "MENU" | "LINK";
   path: string;
   component: string | null;
+  externalUrl?: string | null;
   icon: string | null;
   permissionCode: string | null;
   sortOrder: number;
@@ -55,10 +56,13 @@ export type AuthUser = {
 export type AuthState = {
   token: string | null;
   user: CurrentUser | null;
+  menus: CurrentUserMenu[];
   isAuthenticated: boolean;
   isLoadingUser: boolean;
+  isLoadingMenus: boolean;
   login: (username: string, password: string) => Promise<CurrentUser>;
   fetchCurrentUser: () => Promise<CurrentUser | null>;
+  fetchCurrentUserMenus: (force?: boolean) => Promise<CurrentUserMenu[]>;
   logout: () => Promise<void>;
   clearAuth: () => void;
 };

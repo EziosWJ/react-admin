@@ -15,10 +15,10 @@ import { SettingsPage } from "@/pages/settings";
 import { SystemConfigsPage } from "@/pages/system/configs";
 import { SystemDeptsPage } from "@/pages/system/depts";
 import { SystemDictsPage } from "@/pages/system/dicts";
+import { SystemFilesPage } from "@/pages/system/files";
 import { SystemLoginLogsPage } from "@/pages/system/logs/login-logs";
 import { SystemOperLogsPage } from "@/pages/system/logs/oper-logs";
 import { SystemMenusPage } from "@/pages/system/menus";
-import { SystemPermissionsPage } from "@/pages/system-permissions";
 import { SystemRolesPage } from "@/pages/system/roles";
 import { UsersPage } from "@/pages/system/users";
 
@@ -42,10 +42,6 @@ export const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <DashboardPage />,
-      },
-      {
-        path: "users",
-        element: <UsersPage />,
       },
       {
         path: "system/user",
@@ -80,48 +76,24 @@ export const router = createBrowserRouter([
         element: <Navigate to="/system/user" replace />,
       },
       {
-        path: "system/depts",
-        element: <SystemDeptsPage />,
-      },
-      {
         path: "system/dept",
         element: <SystemDeptsPage />,
-      },
-      {
-        path: "system/dicts",
-        element: <SystemDictsPage />,
       },
       {
         path: "system/dict",
         element: <SystemDictsPage />,
       },
       {
-        path: "system/configs",
-        element: <SystemConfigsPage />,
-      },
-      {
         path: "system/config",
         element: <SystemConfigsPage />,
-      },
-      {
-        path: "system/roles",
-        element: <SystemRolesPage />,
       },
       {
         path: "system/role",
         element: <SystemRolesPage />,
       },
       {
-        path: "system/menus",
-        element: <SystemMenusPage />,
-      },
-      {
         path: "system/menu",
         element: <SystemMenusPage />,
-      },
-      {
-        path: "system/permissions",
-        element: <SystemPermissionsPage />,
       },
       {
         path: "system/login-log",
@@ -130,6 +102,10 @@ export const router = createBrowserRouter([
       {
         path: "system/oper-log",
         element: <SystemOperLogsPage />,
+      },
+      {
+        path: "system/file",
+        element: <SystemFilesPage />,
       },
       {
         path: "account/profile",

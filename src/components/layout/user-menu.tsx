@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { KeyRound, LogOut, UserRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { buildApiUrl } from "@/lib/http";
 import { useAuthStore } from "@/store/auth-store";
 
 export function UserMenu() {
@@ -12,6 +13,7 @@ export function UserMenu() {
   const menuRootRef = useRef<HTMLDivElement | null>(null);
   const displayName = user?.nickname || user?.username || "管理员";
   const username = user?.username ?? "admin";
+  const avatarUrl = user?.avatar ? buildApiUrl(user.avatar) : "";
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -51,14 +53,14 @@ export function UserMenu() {
     <div ref={menuRootRef} className="relative">
       <Button
         variant="ghost"
-        className="flex h-auto items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-left hover:bg-slate-50"
+        className="flex h-auto justify-between items-center gap-2 rounded-lg border border-border bg-surface px-3 py-0.5 text-left hover:bg-slate-50"
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((current) => !current)}
       >
         <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-text-secondary">
-          {user?.avatar ? (
-            <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <UserRound className="h-4 w-4" aria-hidden />
           )}

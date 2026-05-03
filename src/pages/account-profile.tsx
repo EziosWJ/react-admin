@@ -11,6 +11,7 @@ import { StatusTag } from "@/components/common/status-tag";
 import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { isApiError } from "@/lib/api-error";
+import { buildApiUrl } from "@/lib/http";
 import { useAuthStore } from "@/store/auth-store";
 import type { CurrentUser } from "@/types";
 
@@ -102,6 +103,7 @@ export function AccountProfilePage() {
     user?.roles?.map((role) => role.roleName).filter(Boolean).join("、") || "-";
   const roleCodesText =
     user?.roles?.map((role) => role.roleCode).filter(Boolean).join("、") || "-";
+  const avatarUrl = user?.avatar ? buildApiUrl(user.avatar) : "";
 
   return (
     <>
@@ -127,9 +129,9 @@ export function AccountProfilePage() {
         <ContentCard title="账号概览" bodyClassName="space-y-4">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-primary">
-              {user?.avatar ? (
+              {avatarUrl ? (
                 <img
-                  src={user.avatar}
+                  src={avatarUrl}
                   alt="当前用户头像"
                   className="h-full w-full object-cover"
                 />
