@@ -128,7 +128,7 @@ src/
 - 字段命名：camelCase
 - Token 有效期 2 小时，滑动续期，前端仅处理 401
 
-完整接口文档见 `docs/frontend-api-guide.md`，开发环境可通过 Knife4j 查看：`http://localhost:8080/doc.html`
+完整接口文档见 `docs/frontend-api-guide.md`，开发环境可通过 SpringDoc 查看：`http://localhost:8080/swagger-ui.html`
 
 ## 表单绑定方式
 
@@ -204,7 +204,7 @@ const form = useForm<FormValues>({
 
 - 前端地址：`http://localhost:5173`
 - 后端地址：`http://localhost:8080`
-- API 文档：`http://localhost:8080/doc.html`（Knife4j）
+- API 文档：`http://localhost:8080/swagger-ui.html`（SpringDoc）
 - CORS 已在后端配置允许跨域
 
 ## 初始账号
