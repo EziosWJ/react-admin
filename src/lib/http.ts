@@ -30,6 +30,7 @@ type HttpRequestOptionsWithResponse = HttpRequestOptions & {
 
 let authTokenGetter: AuthTokenGetter | null = null;
 let unauthorizedHandler: UnauthorizedHandler | null = null;
+let isRedirecting = false;
 
 export function setAuthTokenGetter(getter: AuthTokenGetter | null) {
   authTokenGetter = getter;
@@ -41,6 +42,8 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
 
 async function notifyUnauthorized(error: ApiError) {
   if (!unauthorizedHandler) return;
+  if (isRedirecting) return;
+  isRedirecting = true;
   await unauthorizedHandler(error);
 }
 
@@ -212,6 +215,16 @@ async function request<T>(
         }
 
         throw error;
+      }
+
+      if (payload && payload.code === 200) {
+        throw new ApiError({
+          code: payload.code,
+          message: "服务端返回了 JSON 而非文件流",
+          status: response.status,
+          type: getApiErrorType(payload.code),
+          data: payload.data,
+        });
       }
     }
 

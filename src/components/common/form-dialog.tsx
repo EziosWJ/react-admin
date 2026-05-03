@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import {
   useEffect,
   useId,
+  useRef,
   type FormEvent,
   type ReactNode,
 } from "react";
@@ -34,6 +35,7 @@ export function FormDialog({
 }: FormDialogProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) {
@@ -43,6 +45,29 @@ export function FormDialog({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !loading) {
         onCancel();
+        return;
+      }
+
+      if (event.key === "Tab" && containerRef.current) {
+        const focusable = containerRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey) {
+          if (document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
 
@@ -64,6 +89,7 @@ export function FormDialog({
 
   return createPortal(
     <div
+      ref={containerRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 py-6"
       role="presentation"
       onMouseDown={(event) => {

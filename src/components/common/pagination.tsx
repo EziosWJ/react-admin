@@ -69,7 +69,7 @@ export function Pagination({
               aria-label="每页条数"
             >
               {pageSizeOptions.map((option) => (
-                <option key={option} value={option}>
+                <option key={option} value={String(option)}>
                   {option} 条
                 </option>
               ))}

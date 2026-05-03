@@ -22,10 +22,14 @@ export function LoginPage() {
     (location.state as { from?: { pathname?: string } } | null)?.from
       ?.pathname;
   const queryRedirect = new URLSearchParams(location.search).get("redirect");
-  const from = stateFrom ?? queryRedirect ?? "/dashboard";
+  let from = stateFrom ?? queryRedirect ?? "/dashboard";
+
+  if (from.includes("://") || from.startsWith("//")) {
+    from = "/dashboard";
+  }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={from} replace />;
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

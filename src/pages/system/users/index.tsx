@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, RefreshCw, RotateCcw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   assignUserRoles,
@@ -74,6 +74,8 @@ export function UsersPage() {
     password: string;
   } | null>(null);
 
+  const editRequestId = useRef(0);
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: toFormValues(),
@@ -120,6 +122,7 @@ export function UsersPage() {
   };
 
   const openEditForm = async (user: UserRecord) => {
+    const requestId = ++editRequestId.current;
     setFormMode("edit");
     setEditingUser(user);
     form.reset(toFormValues(user));
@@ -127,9 +130,11 @@ export function UsersPage() {
 
     try {
       const detail = await getUserDetail(user.id);
+      if (editRequestId.current !== requestId) return;
       setEditingUser(detail);
       form.reset(toFormValues(detail));
     } catch (detailError) {
+      if (editRequestId.current !== requestId) return;
       toast.error({
         title: "用户详情加载失败",
         description: getErrorMessage(detailError, "无法获取用户详情"),

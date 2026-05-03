@@ -9,6 +9,7 @@ import { setAuthTokenGetter, setUnauthorizedHandler } from "@/lib/http";
 import type { AuthState, CurrentUser } from "@/types";
 
 const AUTH_STORAGE_KEY = "react-admin-auth";
+let currentUserPromise: Promise<CurrentUser> | null = null;
 
 type StoredAuth = {
   token: string;
@@ -99,24 +100,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { token, user, isLoadingUser } = get();
     if (!token) return null;
     if (user) return user;
-    if (isLoadingUser) return null;
+    if (isLoadingUser && currentUserPromise) return currentUserPromise;
 
     set({ isLoadingUser: true });
 
-    try {
-      const nextUser = await getCurrentUser();
-      writeStoredAuth(token, nextUser);
-      set({
-        user: nextUser,
-        isAuthenticated: true,
-        isLoadingUser: false,
-      });
-      void get().fetchCurrentUserMenus();
-      return nextUser;
-    } catch (error) {
-      get().clearAuth();
-      throw error;
-    }
+    currentUserPromise = (async () => {
+      try {
+        const nextUser = await getCurrentUser();
+        writeStoredAuth(token, nextUser);
+        set({
+          user: nextUser,
+          isAuthenticated: true,
+          isLoadingUser: false,
+        });
+        void get().fetchCurrentUserMenus();
+        return nextUser;
+      } catch (error) {
+        get().clearAuth();
+        throw error;
+      } finally {
+        currentUserPromise = null;
+      }
+    })();
+
+    return currentUserPromise;
   },
 
   fetchCurrentUserMenus: async (force = false) => {
@@ -140,11 +147,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     try {
       if (get().token) {
+        setUnauthorizedHandler(null);
         await logoutCurrentUser();
       }
     } catch {
       // 退出登录以本地清理为准，接口失败不阻塞用户离开当前会话。
     } finally {
+      setUnauthorizedHandler(() => {
+        useAuthStore.getState().clearAuth();
+        redirectToLogin();
+      });
       get().clearAuth();
     }
   },

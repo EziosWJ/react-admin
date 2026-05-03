@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, RefreshCw, RotateCcw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import {
   createMenu,
@@ -75,6 +75,8 @@ export function SystemMenusPage() {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
+  const editRequestId = useRef(0);
+
   const form = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
     defaultValues: toFormValues(),
@@ -138,6 +140,7 @@ export function SystemMenusPage() {
   };
 
   const openEditForm = async (menu: SystemMenuRecord) => {
+    const requestId = ++editRequestId.current;
     setFormMode("edit");
     setEditingMenu(menu);
     form.reset(toFormValues(menu));
@@ -146,10 +149,12 @@ export function SystemMenusPage() {
 
     try {
       const detail = await getMenuDetail(menu.id);
+      if (editRequestId.current !== requestId) return;
       const nextMenu = { ...menu, ...detail };
       setEditingMenu(nextMenu);
       form.reset(toFormValues(nextMenu));
     } catch (detailError) {
+      if (editRequestId.current !== requestId) return;
       toast.error({
         title: "菜单详情加载失败",
         description: getErrorMessage(detailError, "无法获取菜单详情"),
@@ -190,14 +195,15 @@ export function SystemMenusPage() {
   const runConfirmAction = async () => {
     if (!confirmAction) return;
 
+    if (confirmAction.type === "delete" && confirmAction.menu.isBuiltin === 1) {
+      toast.warning("内置菜单不允许删除");
+      setConfirmAction(null);
+      return;
+    }
+
     setConfirmLoading(true);
     try {
       if (confirmAction.type === "delete") {
-        if (confirmAction.menu.isBuiltin === 1) {
-          toast.warning("内置菜单不允许删除");
-          return;
-        }
-
         await deleteMenu(confirmAction.menu.id);
         toast.success("菜单已删除");
       }

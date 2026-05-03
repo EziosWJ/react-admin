@@ -114,13 +114,20 @@ export function TreeCheckList({
   );
 }
 
+function getDescendantIds(node: TreeCheckNode): Array<string | number> {
+  return (node.children ?? []).flatMap((child) => [
+    child.id,
+    ...getDescendantIds(child),
+  ]);
+}
+
 function getNodeCheckState(node: TreeCheckNode, checkedSet: Set<string | number>) {
-  const childIds = getNodeIds(node);
-  const checkedCount = childIds.filter((id) => checkedSet.has(id)).length;
+  const descendantIds = getDescendantIds(node);
+  const checkedCount = descendantIds.filter((id) => checkedSet.has(id)).length;
 
   return {
     checked: checkedSet.has(node.id),
-    indeterminate: checkedCount > 0 && checkedCount < childIds.length,
+    indeterminate: descendantIds.length > 0 && checkedCount > 0 && checkedCount < descendantIds.length,
   };
 }
 

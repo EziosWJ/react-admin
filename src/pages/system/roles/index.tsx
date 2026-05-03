@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, RefreshCw, RotateCcw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import {
   assignRoleMenus,
@@ -81,6 +81,8 @@ export function SystemRolesPage() {
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
 
+  const editRequestId = useRef(0);
+
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleFormSchema),
     defaultValues: toFormValues(),
@@ -127,6 +129,7 @@ export function SystemRolesPage() {
   };
 
   const openEditForm = async (role: RoleListRecord) => {
+    const requestId = ++editRequestId.current;
     setFormMode("edit");
     setEditingRole(role);
     form.reset(toFormValues(role));
@@ -134,9 +137,11 @@ export function SystemRolesPage() {
 
     try {
       const detail = await getRoleDetail(role.id);
+      if (editRequestId.current !== requestId) return;
       setEditingRole(detail);
       form.reset(toFormValues(detail));
     } catch (detailError) {
+      if (editRequestId.current !== requestId) return;
       toast.error({
         title: "角色详情加载失败",
         description: getErrorMessage(detailError, "无法获取角色详情"),
@@ -226,14 +231,15 @@ export function SystemRolesPage() {
   const runConfirmAction = async () => {
     if (!confirmAction) return;
 
+    if (confirmAction.type === "delete" && confirmAction.role.isBuiltin === 1) {
+      toast.warning("内置角色不允许删除");
+      setConfirmAction(null);
+      return;
+    }
+
     setConfirmLoading(true);
     try {
       if (confirmAction.type === "delete") {
-        if (confirmAction.role.isBuiltin === 1) {
-          toast.warning("内置角色不允许删除");
-          return;
-        }
-
         await deleteRole(confirmAction.role.id);
         toast.success("角色已删除");
       }
