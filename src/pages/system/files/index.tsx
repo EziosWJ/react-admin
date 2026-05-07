@@ -13,7 +13,6 @@ import {
   getFilePage,
   updateFileStatus,
 } from "@/api/file";
-import { getDictItems } from "@/api/system";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
@@ -26,7 +25,13 @@ import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import type { ApiStatus, DictOption, FileRecord } from "@/types";
+import {
+  API_STATUS_VALUES,
+  COMMON_STATUS_OPTIONS,
+  DICT_CODES,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
+import type { ApiStatus, FileRecord } from "@/types";
 import { createFileColumns } from "./columns";
 import { FileDetailDialog } from "./file-detail-dialog";
 import { FileEditDialog } from "./file-edit-dialog";
@@ -53,8 +58,6 @@ const DEFAULT_FILTERS: FilterState = {
   status: "all",
 };
 
-const FILE_BUSINESS_MODULE_DICT_CODE = "FILE_BUSINESS_MODULE";
-
 function buildQuery(filters: FilterState, page: number, pageSize: number) {
   return {
     page,
@@ -78,15 +81,23 @@ export function SystemFilesPage() {
   const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set());
-  const [businessModuleOptions, setBusinessModuleOptions] = useState<
-    DictOption[]
-  >([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [detailRecord, setDetailRecord] = useState<FileRecord | null>(null);
   const [editRecord, setEditRecord] = useState<FileRecord | null>(null);
   const [previewRecord, setPreviewRecord] = useState<FileRecord | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const businessModuleDict = useDictOptions(DICT_CODES.FILE_BUSINESS_MODULE, {
+    showErrorToast: true,
+    errorTitle: "文件业务模块字典加载失败",
+  });
+  const statusDict = useDictOptions<ApiStatus>(DICT_CODES.COMMON_STATUS, {
+    fallback: COMMON_STATUS_OPTIONS,
+    allowedValues: API_STATUS_VALUES,
+    valueType: "number",
+    showErrorToast: true,
+    errorTitle: "文件状态字典加载失败",
+  });
 
   const loadFiles = useCallback(async () => {
     setLoading(true);
@@ -115,29 +126,6 @@ export function SystemFilesPage() {
   useEffect(() => {
     void loadFiles();
   }, [loadFiles]);
-
-  useEffect(() => {
-    let ignored = false;
-
-    getDictItems(FILE_BUSINESS_MODULE_DICT_CODE)
-      .then((items) => {
-        if (!ignored) {
-          setBusinessModuleOptions(items);
-        }
-      })
-      .catch((dictError) => {
-        if (ignored) return;
-        setBusinessModuleOptions([]);
-        toast.warning({
-          title: "业务模块选项加载失败",
-          description: getErrorMessage(dictError, "将使用文本输入筛选。"),
-        });
-      });
-
-    return () => {
-      ignored = true;
-    };
-  }, []);
 
   const submitFilters = (event?: FormEvent) => {
     event?.preventDefault();
@@ -350,7 +338,7 @@ export function SystemFilesPage() {
             }
             placeholder="文件名"
           />
-          {businessModuleOptions.length > 0 ? (
+          {businessModuleDict.options.length > 0 ? (
             <Select
               value={filters.businessModule}
               onChange={(event) =>
@@ -362,7 +350,7 @@ export function SystemFilesPage() {
               aria-label="筛选业务模块"
             >
               <option value="">全部业务模块</option>
-              {businessModuleOptions.map((item) => (
+              {businessModuleDict.options.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
                 </option>
@@ -404,8 +392,11 @@ export function SystemFilesPage() {
             aria-label="筛选状态"
           >
             <option value="all">全部状态</option>
-            <option value="1">启用</option>
-            <option value="0">禁用</option>
+            {statusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </form>
       </SearchFilterBar>
@@ -471,7 +462,7 @@ export function SystemFilesPage() {
 
       <FileUploadDialog
         open={uploadOpen}
-        businessModuleOptions={businessModuleOptions}
+        businessModuleOptions={businessModuleDict.options}
         onCancel={() => setUploadOpen(false)}
         onUploaded={() => {
           setUploadOpen(false);
@@ -488,7 +479,7 @@ export function SystemFilesPage() {
       <FileEditDialog
         open={!!editRecord}
         record={editRecord}
-        businessModuleOptions={businessModuleOptions}
+        businessModuleOptions={businessModuleDict.options}
         onCancel={() => setEditRecord(null)}
         onSaved={() => {
           setEditRecord(null);

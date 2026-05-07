@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { RoleListRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { ApiStatus, RoleListRecord } from "@/types";
 import type { RoleFormMode, RoleFormValues } from "./schema";
 
 type RoleFormDialogProps = {
@@ -15,6 +16,7 @@ type RoleFormDialogProps = {
   form: UseFormReturn<RoleFormValues>;
   loading: boolean;
   editingRole: RoleListRecord | null;
+  statusOptions: DictSelectOption<ApiStatus>[];
   onCancel: () => void;
   onSubmit: (values: RoleFormValues) => void;
 };
@@ -25,6 +27,7 @@ export function RoleFormDialog({
   form,
   loading,
   editingRole,
+  statusOptions,
   onCancel,
   onSubmit,
 }: RoleFormDialogProps) {
@@ -107,8 +110,11 @@ export function RoleFormDialog({
 
             <Field label="状态" htmlFor="status" error={errors.status?.message}>
               <Select id="status" disabled={loading} {...register("status")}>
-                <option value="1">启用</option>
-                <option value="0">禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 

@@ -22,6 +22,12 @@ import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import {
+  DICT_CODES,
+  LOG_STATUS_OPTIONS,
+  type DictSelectOption,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
 import { formatDateTime } from "@/lib/datetime";
 import type { DataTableColumn, LoginLogRecord } from "@/types";
 import { LoginLogDetailDialog } from "./login-log-detail-dialog";
@@ -50,6 +56,10 @@ function buildQuery(filters: FilterState, page: number, pageSize: number) {
   };
 }
 
+function getDictLabel(options: DictSelectOption[], value: string) {
+  return options.find((option) => option.value === value)?.label;
+}
+
 export function SystemLoginLogsPage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] =
@@ -65,6 +75,11 @@ export function SystemLoginLogsPage() {
   const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
+  const logStatusDict = useDictOptions(DICT_CODES.LOG_STATUS, {
+    fallback: LOG_STATUS_OPTIONS,
+    showErrorToast: true,
+    errorTitle: "日志状态字典加载失败",
+  });
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -157,8 +172,13 @@ export function SystemLoginLogsPage() {
       dataIndex: "loginStatus",
       width: 100,
       render: (value) => {
-        const meta = getStatusMeta(String(value ?? ""));
-        return <StatusTag tone={meta.tone}>{meta.label}</StatusTag>;
+        const status = String(value ?? "");
+        const meta = getStatusMeta(status);
+        return (
+          <StatusTag tone={meta.tone}>
+            {getDictLabel(logStatusDict.options, status) || meta.label}
+          </StatusTag>
+        );
       },
     },
     {
@@ -264,8 +284,11 @@ export function SystemLoginLogsPage() {
             aria-label="筛选登录状态"
           >
             <option value="all">全部状态</option>
-            <option value="SUCCESS">成功</option>
-            <option value="FAIL">失败</option>
+            {logStatusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
           <Input
             value={filters.loginIp}

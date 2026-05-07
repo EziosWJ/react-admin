@@ -23,11 +23,21 @@ import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import {
+  API_STATUS_VALUES,
+  COMMON_STATUS_OPTIONS,
+  DICT_CODES,
+  MENU_TYPE_OPTIONS,
+  MENU_TYPE_VALUES,
+  MENU_VISIBLE_OPTIONS,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
 import { isApiError } from "@/lib/api-error";
 import type {
   ApiStatus,
   SystemMenuRecord,
   SystemMenuTreeRecord,
+  SystemMenuType,
 } from "@/types";
 import { createMenuColumns } from "./columns";
 import { MenuFormDialog } from "./menu-form-dialog";
@@ -80,6 +90,26 @@ export function SystemMenusPage() {
   const form = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
     defaultValues: toFormValues(),
+  });
+  const menuTypeDict = useDictOptions<SystemMenuType>(DICT_CODES.MENU_TYPE, {
+    fallback: MENU_TYPE_OPTIONS,
+    allowedValues: MENU_TYPE_VALUES,
+    showErrorToast: true,
+    errorTitle: "菜单类型字典加载失败",
+  });
+  const statusDict = useDictOptions<ApiStatus>(DICT_CODES.COMMON_STATUS, {
+    fallback: COMMON_STATUS_OPTIONS,
+    allowedValues: API_STATUS_VALUES,
+    valueType: "number",
+    showErrorToast: true,
+    errorTitle: "菜单状态字典加载失败",
+  });
+  const visibleDict = useDictOptions<ApiStatus>(DICT_CODES.MENU_VISIBLE, {
+    fallback: MENU_VISIBLE_OPTIONS,
+    allowedValues: API_STATUS_VALUES,
+    valueType: "number",
+    showErrorToast: true,
+    errorTitle: "菜单可见性字典加载失败",
   });
 
   const loadMenus = useCallback(async () => {
@@ -329,9 +359,11 @@ export function SystemMenusPage() {
             aria-label="筛选菜单类型"
           >
             <option value="all">全部类型</option>
-            <option value="DIR">目录</option>
-            <option value="MENU">菜单</option>
-            <option value="LINK">外链</option>
+            {menuTypeDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
           <Select
             value={String(filters.status)}
@@ -347,8 +379,11 @@ export function SystemMenusPage() {
             aria-label="筛选状态"
           >
             <option value="all">全部状态</option>
-            <option value="1">启用</option>
-            <option value="0">禁用</option>
+            {statusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
           <Select
             value={String(filters.visible)}
@@ -364,8 +399,11 @@ export function SystemMenusPage() {
             aria-label="筛选可见性"
           >
             <option value="all">全部可见性</option>
-            <option value="1">显示</option>
-            <option value="0">隐藏</option>
+            {visibleDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </form>
       </SearchFilterBar>
@@ -423,6 +461,9 @@ export function SystemMenusPage() {
         treeLoading={treeLoading}
         editingMenu={editingMenu}
         parentNodes={parentNodes}
+        menuTypeOptions={menuTypeDict.options}
+        visibleOptions={visibleDict.options}
+        statusOptions={statusDict.options}
         onCancel={() => setFormOpen(false)}
         onSubmit={submitMenuForm}
       />

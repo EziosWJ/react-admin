@@ -25,8 +25,16 @@ import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import {
+  API_STATUS_VALUES,
+  COMMON_STATUS_OPTIONS,
+  DICT_CODES,
+  USER_GENDER_OPTIONS,
+  USER_GENDER_VALUES,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
 import { isApiError } from "@/lib/api-error";
-import type { ApiStatus, AssignableRole, UserRecord } from "@/types";
+import type { ApiStatus, AssignableRole, UserGender, UserRecord } from "@/types";
 import { createUserColumns } from "./columns";
 import { PasswordResultDialog } from "./password-result-dialog";
 import { RoleAssignDialog } from "./role-assign-dialog";
@@ -79,6 +87,19 @@ export function UsersPage() {
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: toFormValues(),
+  });
+  const statusDict = useDictOptions<ApiStatus>(DICT_CODES.COMMON_STATUS, {
+    fallback: COMMON_STATUS_OPTIONS,
+    allowedValues: API_STATUS_VALUES,
+    valueType: "number",
+    showErrorToast: true,
+    errorTitle: "用户状态字典加载失败",
+  });
+  const genderDict = useDictOptions<UserGender>(DICT_CODES.USER_GENDER, {
+    fallback: USER_GENDER_OPTIONS,
+    allowedValues: USER_GENDER_VALUES,
+    showErrorToast: true,
+    errorTitle: "用户性别字典加载失败",
   });
 
   const loadUsers = useCallback(async () => {
@@ -378,8 +399,11 @@ export function UsersPage() {
             aria-label="筛选状态"
           >
             <option value="all">全部状态</option>
-            <option value="1">启用</option>
-            <option value="0">禁用</option>
+            {statusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </form>
       </SearchFilterBar>
@@ -434,6 +458,8 @@ export function UsersPage() {
         mode={formMode}
         form={form}
         loading={formSubmitting}
+        genderOptions={genderDict.options}
+        statusOptions={statusDict.options}
         onCancel={() => setFormOpen(false)}
         onSubmit={submitUserForm}
       />

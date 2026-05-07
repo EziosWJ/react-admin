@@ -9,7 +9,8 @@ import { toast } from "@/components/common/toast-store";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import type { DictOption, FileRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { FileRecord } from "@/types";
 import { getErrorMessage } from "./utils";
 
 const fileEditSchema = z.object({
@@ -25,7 +26,7 @@ type FileEditValues = z.infer<typeof fileEditSchema>;
 type FileEditDialogProps = {
   open: boolean;
   record: FileRecord | null;
-  businessModuleOptions: DictOption[];
+  businessModuleOptions: DictSelectOption[];
   onCancel: () => void;
   onSaved: () => void;
 };

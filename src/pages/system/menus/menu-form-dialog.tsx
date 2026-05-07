@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { SystemMenuRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { ApiStatus, SystemMenuRecord, SystemMenuType } from "@/types";
 import type { MenuFormMode, MenuFormValues } from "./schema";
 
 type MenuFormDialogProps = {
@@ -18,6 +19,9 @@ type MenuFormDialogProps = {
   treeLoading: boolean;
   editingMenu: SystemMenuRecord | null;
   parentNodes: TreeSelectNode[];
+  menuTypeOptions: DictSelectOption<SystemMenuType>[];
+  visibleOptions: DictSelectOption<ApiStatus>[];
+  statusOptions: DictSelectOption<ApiStatus>[];
   onCancel: () => void;
   onSubmit: (values: MenuFormValues) => void;
 };
@@ -30,6 +34,9 @@ export function MenuFormDialog({
   treeLoading,
   editingMenu,
   parentNodes,
+  menuTypeOptions,
+  visibleOptions,
+  statusOptions,
   onCancel,
   onSubmit,
 }: MenuFormDialogProps) {
@@ -126,9 +133,11 @@ export function MenuFormDialog({
                 disabled={loading || isBuiltin}
                 {...register("menuType")}
               >
-                <option value="DIR">目录</option>
-                <option value="MENU">菜单</option>
-                <option value="LINK">外链</option>
+                {menuTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 
@@ -219,15 +228,21 @@ export function MenuFormDialog({
 
             <Field label="可见性" htmlFor="visible" error={errors.visible?.message}>
               <Select id="visible" disabled={loading} {...register("visible")}>
-                <option value="1">显示</option>
-                <option value="0">隐藏</option>
+                {visibleOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 
             <Field label="状态" htmlFor="status" error={errors.status?.message}>
               <Select id="status" disabled={loading} {...register("status")}>
-                <option value="1">启用</option>
-                <option value="0">禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 

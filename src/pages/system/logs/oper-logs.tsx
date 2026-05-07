@@ -18,6 +18,13 @@ import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import {
+  DICT_CODES,
+  LOG_STATUS_OPTIONS,
+  OPERATION_TYPE_OPTIONS,
+  type DictSelectOption,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
 import { formatDateTime } from "@/lib/datetime";
 import type { DataTableColumn, OperLogDetail, OperLogRecord } from "@/types";
 import { OperLogDetailDialog } from "./oper-log-detail-dialog";
@@ -55,6 +62,10 @@ function buildQuery(filters: FilterState, page: number, pageSize: number) {
   };
 }
 
+function getDictLabel(options: DictSelectOption[], value: string) {
+  return options.find((option) => option.value === value)?.label;
+}
+
 export function SystemOperLogsPage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] =
@@ -70,6 +81,16 @@ export function SystemOperLogsPage() {
   const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
+  const operationTypeDict = useDictOptions(DICT_CODES.OPERATION_TYPE, {
+    fallback: OPERATION_TYPE_OPTIONS,
+    showErrorToast: true,
+    errorTitle: "操作类型字典加载失败",
+  });
+  const logStatusDict = useDictOptions(DICT_CODES.LOG_STATUS, {
+    fallback: LOG_STATUS_OPTIONS,
+    showErrorToast: true,
+    errorTitle: "日志状态字典加载失败",
+  });
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -161,11 +182,15 @@ export function SystemOperLogsPage() {
       title: "操作类型",
       dataIndex: "operationType",
       width: 110,
-      render: (value) => (
-        <StatusTag tone="info">
-          {getOperationTypeLabel(String(value || ""))}
-        </StatusTag>
-      ),
+      render: (value) => {
+        const type = String(value || "");
+        return (
+          <StatusTag tone="info">
+            {getDictLabel(operationTypeDict.options, type) ||
+              getOperationTypeLabel(type)}
+          </StatusTag>
+        );
+      },
     },
     {
       title: "请求",
@@ -200,8 +225,13 @@ export function SystemOperLogsPage() {
       dataIndex: "operationStatus",
       width: 100,
       render: (value) => {
-        const meta = getStatusMeta(String(value ?? ""));
-        return <StatusTag tone={meta.tone}>{meta.label}</StatusTag>;
+        const status = String(value ?? "");
+        const meta = getStatusMeta(status);
+        return (
+          <StatusTag tone={meta.tone}>
+            {getDictLabel(logStatusDict.options, status) || meta.label}
+          </StatusTag>
+        );
       },
     },
     {
@@ -288,12 +318,11 @@ export function SystemOperLogsPage() {
             aria-label="筛选操作类型"
           >
             <option value="all">全部类型</option>
-            <option value="CREATE">新增</option>
-            <option value="UPDATE">修改</option>
-            <option value="DELETE">删除</option>
-            <option value="QUERY">查询</option>
-            <option value="EXPORT">导出</option>
-            <option value="IMPORT">导入</option>
+            {operationTypeDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
           <Input
             value={filters.operatorName}
@@ -317,8 +346,11 @@ export function SystemOperLogsPage() {
             aria-label="筛选操作状态"
           >
             <option value="all">全部状态</option>
-            <option value="SUCCESS">成功</option>
-            <option value="FAIL">失败</option>
+            {logStatusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </SearchFilterBar>
       </form>

@@ -16,7 +16,6 @@ import {
   batchDeleteSystemConfigs,
   createSystemConfig,
   deleteSystemConfig,
-  getDictItems,
   getSystemConfigDetail,
   getSystemConfigPage,
   updateSystemConfig,
@@ -37,13 +36,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  API_STATUS_VALUES,
+  COMMON_STATUS_OPTIONS,
+  CONFIG_TYPE_OPTIONS,
+  CONFIG_TYPE_VALUES,
+  CONFIG_VALUE_TYPE_OPTIONS,
+  CONFIG_VALUE_TYPE_VALUES,
+  DICT_CODES,
+  type DictSelectOption,
+} from "@/constants/dicts";
+import { useDictOptions } from "@/hooks/use-dict-options";
 import { isApiError } from "@/lib/api-error";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import type {
   ApiStatus,
   DataTableColumn,
-  DictOption,
   SystemConfigRecord,
   SystemConfigType,
   SystemConfigValueType,
@@ -58,11 +67,6 @@ type FilterState = {
 
 type FormMode = "create" | "edit";
 
-type SelectOption<T extends string> = {
-  label: string;
-  value: T;
-};
-
 type ConfirmAction =
   | { type: "delete"; config: SystemConfigRecord }
   | { type: "batchDelete"; configs: SystemConfigRecord[] }
@@ -74,17 +78,6 @@ const DEFAULT_FILTERS: FilterState = {
   configType: "all",
   status: "all",
 };
-
-const fallbackConfigTypeOptions: Array<SelectOption<SystemConfigType>> = [
-  { label: "系统配置", value: "SYSTEM" },
-  { label: "自定义配置", value: "CUSTOM" },
-];
-
-const fallbackValueTypeOptions: Array<SelectOption<SystemConfigValueType>> = [
-  { label: "文本", value: "TEXT" },
-  { label: "数字", value: "NUMBER" },
-  { label: "布尔", value: "BOOLEAN" },
-];
 
 const statusMeta: Record<ApiStatus, { label: string; tone: "success" | "neutral" }> = {
   1: { label: "启用", tone: "success" },
@@ -147,27 +140,6 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-function isSystemConfigType(value: string): value is SystemConfigType {
-  return value === "SYSTEM" || value === "CUSTOM";
-}
-
-function isSystemConfigValueType(value: string): value is SystemConfigValueType {
-  return value === "TEXT" || value === "NUMBER" || value === "BOOLEAN";
-}
-
-function dictOptionsToSelectOptions<T extends string>(
-  items: DictOption[],
-  isValue: (value: string) => value is T,
-  fallback: Array<SelectOption<T>>,
-) {
-  const options = items
-    .filter((item) => isValue(item.value))
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((item) => ({ label: item.label, value: item.value as T }));
-
-  return options.length > 0 ? options : fallback;
-}
-
 function buildQuery(filters: FilterState, page: number, pageSize: number) {
   return {
     page,
@@ -189,14 +161,14 @@ function isBuiltinConfig(config: SystemConfigRecord) {
 
 function getConfigTypeLabel(
   value: SystemConfigType | undefined,
-  options: Array<SelectOption<SystemConfigType>>,
+  options: Array<DictSelectOption<SystemConfigType>>,
 ) {
   return options.find((item) => item.value === value)?.label ?? value ?? "-";
 }
 
 function getValueTypeLabel(
   value: SystemConfigValueType | undefined,
-  options: Array<SelectOption<SystemConfigValueType>>,
+  options: Array<DictSelectOption<SystemConfigValueType>>,
 ) {
   return options.find((item) => item.value === value)?.label ?? value ?? "-";
 }
@@ -246,12 +218,6 @@ export function SystemConfigsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [configTypeOptions, setConfigTypeOptions] = useState(
-    fallbackConfigTypeOptions,
-  );
-  const [valueTypeOptions, setValueTypeOptions] = useState(
-    fallbackValueTypeOptions,
-  );
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [editingConfig, setEditingConfig] = useState<SystemConfigRecord | null>(
@@ -264,6 +230,28 @@ export function SystemConfigsPage() {
   const form = useForm<ConfigFormValues>({
     resolver: zodResolver(configFormSchema),
     defaultValues: toFormValues(),
+  });
+  const configTypeDict = useDictOptions<SystemConfigType>(DICT_CODES.CONFIG_TYPE, {
+    fallback: CONFIG_TYPE_OPTIONS,
+    allowedValues: CONFIG_TYPE_VALUES,
+    showErrorToast: true,
+    errorTitle: "配置类型字典加载失败",
+  });
+  const valueTypeDict = useDictOptions<SystemConfigValueType>(
+    DICT_CODES.CONFIG_VALUE_TYPE,
+    {
+      fallback: CONFIG_VALUE_TYPE_OPTIONS,
+      allowedValues: CONFIG_VALUE_TYPE_VALUES,
+      showErrorToast: true,
+      errorTitle: "配置值类型字典加载失败",
+    },
+  );
+  const statusDict = useDictOptions<ApiStatus>(DICT_CODES.COMMON_STATUS, {
+    fallback: COMMON_STATUS_OPTIONS,
+    allowedValues: API_STATUS_VALUES,
+    valueType: "number",
+    showErrorToast: true,
+    errorTitle: "配置状态字典加载失败",
   });
 
   const loadConfigs = useCallback(async () => {
@@ -293,45 +281,6 @@ export function SystemConfigsPage() {
   useEffect(() => {
     void loadConfigs();
   }, [loadConfigs]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadOptions() {
-      try {
-        const [configTypes, valueTypes] = await Promise.all([
-          getDictItems("CONFIG_TYPE"),
-          getDictItems("CONFIG_VALUE_TYPE"),
-        ]);
-
-        if (ignore) return;
-
-        setConfigTypeOptions(
-          dictOptionsToSelectOptions(
-            configTypes,
-            isSystemConfigType,
-            fallbackConfigTypeOptions,
-          ),
-        );
-        setValueTypeOptions(
-          dictOptionsToSelectOptions(
-            valueTypes,
-            isSystemConfigValueType,
-            fallbackValueTypeOptions,
-          ),
-        );
-      } catch {
-        if (ignore) return;
-        setConfigTypeOptions(fallbackConfigTypeOptions);
-        setValueTypeOptions(fallbackValueTypeOptions);
-      }
-    }
-
-    void loadOptions();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   const selectableIds = useMemo(
     () => configs.filter((item) => !isBuiltinConfig(item)).map((item) => item.id),
@@ -584,7 +533,10 @@ export function SystemConfigsPage() {
       dataIndex: "configType",
       width: 120,
       render: (value) =>
-        getConfigTypeLabel(value as SystemConfigType | undefined, configTypeOptions),
+        getConfigTypeLabel(
+          value as SystemConfigType | undefined,
+          configTypeDict.options,
+        ),
     },
     {
       title: "值类型",
@@ -593,7 +545,7 @@ export function SystemConfigsPage() {
       render: (value) =>
         getValueTypeLabel(
           value as SystemConfigValueType | undefined,
-          valueTypeOptions,
+          valueTypeDict.options,
         ),
     },
     {
@@ -739,7 +691,7 @@ export function SystemConfigsPage() {
             aria-label="筛选配置类型"
           >
             <option value="all">全部类型</option>
-            {configTypeOptions.map((option) => (
+            {configTypeDict.options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -759,8 +711,11 @@ export function SystemConfigsPage() {
             aria-label="筛选状态"
           >
             <option value="all">全部状态</option>
-            <option value="1">启用</option>
-            <option value="0">禁用</option>
+            {statusDict.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </form>
       </SearchFilterBar>
@@ -830,8 +785,9 @@ export function SystemConfigsPage() {
         form={form}
         loading={submitting}
         editingConfig={editingConfig}
-        configTypeOptions={configTypeOptions}
-        valueTypeOptions={valueTypeOptions}
+        configTypeOptions={configTypeDict.options}
+        valueTypeOptions={valueTypeDict.options}
+        statusOptions={statusDict.options}
         onCancel={() => setFormOpen(false)}
         onSubmit={submitForm}
       />
@@ -858,8 +814,9 @@ type ConfigFormDialogProps = {
   form: UseFormReturn<ConfigFormValues>;
   loading: boolean;
   editingConfig: SystemConfigRecord | null;
-  configTypeOptions: Array<SelectOption<SystemConfigType>>;
-  valueTypeOptions: Array<SelectOption<SystemConfigValueType>>;
+  configTypeOptions: Array<DictSelectOption<SystemConfigType>>;
+  valueTypeOptions: Array<DictSelectOption<SystemConfigValueType>>;
+  statusOptions: Array<DictSelectOption<ApiStatus>>;
   onCancel: () => void;
   onSubmit: (values: ConfigFormValues) => void;
 };
@@ -872,6 +829,7 @@ function ConfigFormDialog({
   editingConfig,
   configTypeOptions,
   valueTypeOptions,
+  statusOptions,
   onCancel,
   onSubmit,
 }: ConfigFormDialogProps) {
@@ -994,8 +952,11 @@ function ConfigFormDialog({
 
             <Field label="状态" htmlFor="status" error={errors.status?.message}>
               <Select id="status" disabled={loading} {...register("status")}>
-                <option value="1">启用</option>
-                <option value="0">禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { SystemDictTypeRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { ApiStatus, SystemDictTypeRecord } from "@/types";
 import type { DictTypeFormValues, FormMode } from "./schema";
 
 type DictTypeFormDialogProps = {
@@ -15,6 +16,7 @@ type DictTypeFormDialogProps = {
   form: UseFormReturn<DictTypeFormValues>;
   loading: boolean;
   editingType: SystemDictTypeRecord | null;
+  statusOptions: DictSelectOption<ApiStatus>[];
   onCancel: () => void;
   onSubmit: (values: DictTypeFormValues) => void | Promise<void>;
 };
@@ -25,6 +27,7 @@ export function DictTypeFormDialog({
   form,
   loading,
   editingType,
+  statusOptions,
   onCancel,
   onSubmit,
 }: DictTypeFormDialogProps) {
@@ -107,8 +110,11 @@ export function DictTypeFormDialog({
 
             <Field label="状态" htmlFor="status" error={errors.status?.message}>
               <Select id="status" disabled={loading} {...register("status")}>
-                <option value="1">启用</option>
-                <option value="0">禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
 

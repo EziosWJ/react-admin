@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { DeptOption, DeptRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { ApiStatus, DeptOption, DeptRecord } from "@/types";
 import type { DeptFormMode, DeptFormValues } from "./schema";
 
 type DeptFormDialogProps = {
@@ -21,6 +22,7 @@ type DeptFormDialogProps = {
   optionsLoading: boolean;
   editingDept: DeptRecord | null;
   deptOptions: DeptOption[];
+  statusOptions: DictSelectOption<ApiStatus>[];
   onCancel: () => void;
   onSubmit: (values: DeptFormValues) => void | Promise<void>;
 };
@@ -55,6 +57,7 @@ export function DeptFormDialog({
   optionsLoading,
   editingDept,
   deptOptions,
+  statusOptions,
   onCancel,
   onSubmit,
 }: DeptFormDialogProps) {
@@ -180,8 +183,11 @@ export function DeptFormDialog({
                 {...register("status", { valueAsNumber: true })}
                 disabled={loading}
               >
-                <option value={1}>启用</option>
-                <option value={0}>禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </Field>
             <div className="md:col-span-2">

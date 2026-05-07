@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { DictOption, FileRecord } from "@/types";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { FileRecord } from "@/types";
 import { getErrorMessage } from "./utils";
 
 type FileUploadDialogProps = {
   open: boolean;
-  businessModuleOptions: DictOption[];
+  businessModuleOptions: DictSelectOption[];
   onCancel: () => void;
   onUploaded: (record: FileRecord) => void;
 };

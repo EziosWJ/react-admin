@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import type { DictSelectOption } from "@/constants/dicts";
+import type { ApiStatus, UserGender } from "@/types";
 import type { UserFormMode, UserFormValues } from "./schema";
 
 type UserFormDialogProps = {
@@ -13,6 +15,8 @@ type UserFormDialogProps = {
   mode: UserFormMode;
   form: UseFormReturn<UserFormValues>;
   loading: boolean;
+  genderOptions: DictSelectOption<UserGender>[];
+  statusOptions: DictSelectOption<ApiStatus>[];
   onCancel: () => void;
   onSubmit: (values: UserFormValues) => void | Promise<void>;
 };
@@ -22,6 +26,8 @@ export function UserFormDialog({
   mode,
   form,
   loading,
+  genderOptions,
+  statusOptions,
   onCancel,
   onSubmit,
 }: UserFormDialogProps) {
@@ -95,9 +101,11 @@ export function UserFormDialog({
             </FormField>
             <FormField label="性别" error={errors.gender?.message}>
               <Select {...register("gender")} disabled={loading}>
-                <option value="UNKNOWN">未知</option>
-                <option value="MALE">男</option>
-                <option value="FEMALE">女</option>
+                {genderOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </FormField>
             <FormField label="状态" error={errors.status?.message}>
@@ -105,8 +113,11 @@ export function UserFormDialog({
                 {...register("status", { valueAsNumber: true })}
                 disabled={loading}
               >
-                <option value={1}>启用</option>
-                <option value={0}>禁用</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </FormField>
             <FormField label="部门 ID" error={errors.deptId?.message}>
