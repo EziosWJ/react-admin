@@ -4,6 +4,7 @@ import { ApiStatusTag } from "@/components/common/api-status-tag";
 import { DetailDialog } from "@/components/common/detail-dialog";
 import { DetailItem } from "@/components/common/detail-item";
 import type { FileRecord } from "@/types";
+import { formatDateTime } from "@/lib/datetime";
 import { formatFileSize, getErrorMessage } from "./utils";
 
 type FileDetailDialogProps = {
@@ -72,7 +73,7 @@ export function FileDetailDialog({
             label="状态"
             value={data ? <ApiStatusTag status={data.status} /> : undefined}
           />
-          <DetailItem label="创建时间" value={data?.createTime} />
+          <DetailItem label="创建时间" value={formatDateTime(data?.createTime)} />
           <DetailItem
             label="访问地址"
             className="sm:col-span-2"

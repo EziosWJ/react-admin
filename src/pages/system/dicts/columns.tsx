@@ -176,7 +176,10 @@ export function createDictDataColumns({
       title: "创建时间",
       dataIndex: "createTime",
       width: 170,
-      render: (value) => String(value || "-"),
+      render: (value) =>
+        formatDateOnly(
+          typeof value === "string" ? value : value ? String(value) : "",
+        ),
     },
     {
       title: "操作",

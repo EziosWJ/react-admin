@@ -3,6 +3,7 @@ import { ContentCard } from "@/components/common/content-card";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusTag } from "@/components/common/status-tag";
 import { Button } from "@/components/ui/button";
+import { formatDateTime } from "@/lib/datetime";
 
 const detail = {
   code: "ORD-20260502001",
@@ -64,8 +65,8 @@ export function DetailDemoPage() {
             <DetailField label="申请主体" value={detail.applicant} />
             <DetailField label="归属部门" value={detail.owner} />
             <DetailField label="当前状态" value={<StatusTag tone="warning">处理中</StatusTag>} />
-            <DetailField label="创建时间" value={detail.createdAt} />
-            <DetailField label="更新时间" value={detail.updatedAt} />
+            <DetailField label="创建时间" value={formatDateTime(detail.createdAt)} />
+            <DetailField label="更新时间" value={formatDateTime(detail.updatedAt)} />
             <DetailField
               label="校验结果"
               value={

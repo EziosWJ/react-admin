@@ -11,6 +11,7 @@ import { StatusTag } from "@/components/common/status-tag";
 import { toast } from "@/components/common/toast-store";
 import { Button } from "@/components/ui/button";
 import { isApiError } from "@/lib/api-error";
+import { formatDateTime } from "@/lib/datetime";
 import { buildApiUrl } from "@/lib/http";
 import { useAuthStore } from "@/store/auth-store";
 import type { CurrentUser } from "@/types";
@@ -183,7 +184,7 @@ export function AccountProfilePage() {
               <InfoItem label="用户名" value={user?.username} />
               <InfoItem label="昵称" value={user?.nickname} />
               <InfoItem label="所属部门" value={user?.dept?.deptName} />
-              <InfoItem label="最近登录时间" value={user?.lastLoginTime} />
+              <InfoItem label="最近登录时间" value={formatDateTime(user?.lastLoginTime)} />
               <InfoItem label="最近登录 IP" value={user?.lastLoginIp} />
               <InfoItem label="用户 ID" value={user?.id} />
             </div>
